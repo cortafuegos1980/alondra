@@ -14,6 +14,7 @@
   button { width: 100%; padding: 15px; background: #25D366; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
   button.loading { background: #cccccc; cursor: not-allowed; }
   .message { padding: 10px; border-radius: 5px; margin-bottom: 15px; display: none; }
+  .cupo { margin-bottom: 15px; font-weight: bold; }
 </style>
 </head>
 <body>
@@ -21,6 +22,7 @@
   <h2>Reserva Entradas - La Jirafa</h2>
   
   <div class="timer" id="timerDiv">Tiempo restante: 5:00</div>
+  <div class="cupo" id="cupoDiv">Entradas disponibles: 150</div>
   <div id="message" class="message"></div>
   
   <div class="form-group">
@@ -29,7 +31,7 @@
   </div>
 
   <div class="form-group">
-    <label>Tu WhatsApp (solo numeros):</label>
+    <label>Tu WhatsApp (solo números):</label>
     <input type="text" id="telefono" placeholder="Ej: 3415123456">
   </div>
 
@@ -42,7 +44,7 @@
     <label>Fecha del Evento:</label>
     <select id="fecha">
       <option value="Viernes 20:30">Viernes 20:30</option>
-      <option value="Sabado 21:00">Sabado 21:00</option>
+      <option value="Sábado 21:00">Sábado 21:00</option>
       <option value="Domingo 19:00">Domingo 19:00</option>
     </select>
   </div>
@@ -51,68 +53,80 @@
 </div>
 
 <script>
-let tiempoRestante = 300; // 5 minutos
+const EXEC_URL = 'https://script.google.com/macros/s/AKfycbw1_-1LFIfXI_yf_5o4ScKXWOQNdBl_pG8nfhoTx-ueyAXy5kPKbByoEPvSCrTTPO77/exec';
+
+let tiempoRestante = 300;
 let temporizadorActivo = true;
 
 function actualizarTemporizador() {
   if (!temporizadorActivo) return;
   const minutos = Math.floor(tiempoRestante / 60);
   const segundos = tiempoRestante % 60;
-  const timerDiv = document.getElementById('timerDiv');
-  timerDiv.textContent = `Tiempo restante: ${minutos}:${segundos < 10 ? '0' : ''}${segundos}`;
-
-  if (tiempoRestante <= 60) {
-    timerDiv.style.background = '#ffcdd2';
-    timerDiv.style.color = '#b71c1c';
-  }
+  document.getElementById('timerDiv').textContent = 'Tiempo restante: ' + minutos + ':' + (segundos < 10 ? '0' : '') + segundos;
 
   if (tiempoRestante <= 0) {
-    timerDiv.textContent = 'TIEMPO AGOTADO';
-    document.getElementById('btnReservar').disabled = true;
-    document.getElementById('btnReservar').classList.add('loading');
     temporizadorActivo = false;
+    alert('El tiempo se agotó, vas a ser redirigido.');
+    window.location.href = 'https://www.google.com';
   } else {
     tiempoRestante--;
     setTimeout(actualizarTemporizador, 1000);
   }
 }
+actualizarTemporizador();
 
-function mostrarMensaje(texto, tipo) {
-  const msg = document.getElementById('message');
-  msg.textContent = texto;
-  msg.style.display = 'block';
-  if (tipo === 'error') {
-    msg.style.background = '#ffebee';
-    msg.style.color = '#c62828';
-  } else {
-    msg.style.background = '#e8f5e8';
-    msg.style.color = '#2e7d32';
+async function actualizarCupo() {
+  try {
+    const response = await fetch(EXEC_URL);
+    const data = await response.json();
+    if (data.status === 'OK' && data.cupoRestante !== undefined) {
+      document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante;
+    }
+  } catch(err) {
+    console.error('Error al consultar cupo:', err);
   }
 }
+actualizarCupo();
 
-document.getElementById('btnReservar').onclick = function() {
+document.getElementById('btnReservar').onclick = async function() {
   const nombre = document.getElementById('nombre').value.trim();
   const telefono = document.getElementById('telefono').value.trim().replace(/\D/g,'');
-  const cantidad = document.getElementById('cantidad').value;
+  const cantidad = parseInt(document.getElementById('cantidad').value);
   const fecha = document.getElementById('fecha').value;
 
-  if (!nombre || !telefono || cantidad < 1 || cantidad > 10) {
-    mostrarMensaje('Por favor completa todos los campos correctamente', 'error');
+  if (!nombre || !telefono || !cantidad) {
+    alert('Completa todos los campos correctamente.');
     return;
   }
 
-  // Mensaje para WhatsApp
-  const mensaje = `Reserva La Jirafa\nNombre: ${nombre}\nWhatsApp: ${telefono}\nEntradas: ${cantidad}\nFecha: ${fecha}`;
-  const linkWhatsApp = `https://wa.me/549${telefono}?text=${encodeURIComponent(mensaje)}`;
+  const formData = new URLSearchParams();
+  formData.append('nombre', nombre);
+  formData.append('telefonoCliente', telefono);
+  formData.append('cantidad', cantidad);
+  formData.append('fecha', fecha);
 
-  // Abrir WhatsApp Web o app móvil
-  window.open(linkWhatsApp, '_blank');
+  this.disabled = true;
+  this.classList.add('loading');
 
-  mostrarMensaje('✅ Mensaje listo para enviar por WhatsApp', 'success');
-  temporizadorActivo = false;
+  try {
+    const response = await fetch(EXEC_URL, { method: 'POST', body: formData });
+    const data = await response.json();
+
+    if (data.status === 'OK') {
+      alert(`Reserva confirmada: ${data.id}\nCupo restante: ${data.cupoRestante}`);
+      const mensaje = encodeURIComponent(`Hola! Confirmo mi reserva ${data.id} de ${cantidad} entradas para La Jirafa.`);
+      window.open(`https://wa.me/${telefono}?text=${mensaje}`, '_blank');
+      actualizarCupo();
+    } else {
+      alert(data.message);
+    }
+  } catch(err) {
+    alert('Error al enviar reserva: ' + err.message);
+  }
+
+  this.disabled = false;
+  this.classList.remove('loading');
 };
-
-actualizarTemporizador();
 </script>
 </body>
 </html>
