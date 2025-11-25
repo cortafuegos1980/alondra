@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reserva de Entradas - La Jirafa</title>
+<title>Reserva Entradas - La Jirafa</title>
 <style>
   body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
   .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -12,44 +12,46 @@
   label { display: block; margin-bottom: 5px; font-weight: bold; }
   input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
   button { width: 100%; padding: 15px; background: #25D366; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
-  .loading { background: #cccccc !important; }
+  button.loading { background: #cccccc; cursor: not-allowed; }
   .message { padding: 10px; border-radius: 5px; margin-bottom: 15px; display: none; }
 </style>
 </head>
 <body>
 <div class="container">
-  <h2>Reserva de Entradas - La Jirafa</h2>
+  <h2>Reserva Entradas - La Jirafa</h2>
+  
   <div class="timer" id="timerDiv">Tiempo restante: 5:00</div>
   <div id="message" class="message"></div>
-  <div id="formContent">
-    <div class="form-group">
-      <label>Apellido y Nombre:</label>
-      <input type="text" id="nombre" placeholder="Ej: Maria Gonzalez">
-    </div>
-    <div class="form-group">
-      <label>Tu WhatsApp (solo números):</label>
-      <input type="text" id="telefono" placeholder="Ej: 3415123456">
-    </div>
-    <div class="form-group">
-      <label>Cantidad de Entradas (max. 10):</label>
-      <input type="number" id="cantidad" min="1" max="10" value="1">
-    </div>
-    <div class="form-group">
-      <label>Fecha del Evento:</label>
-      <select id="fecha">
-        <option value="Viernes 20:30">Viernes 20:30</option>
-        <option value="Sabado 21:00">Sábado 21:00</option>
-        <option value="Domingo 19:00">Domingo 19:00</option>
-      </select>
-    </div>
-    <button id="btnReservar">Reservar y Pagar</button>
+  
+  <div class="form-group">
+    <label>Apellido y Nombre:</label>
+    <input type="text" id="nombre" placeholder="Ej: Maria Gonzalez">
   </div>
+
+  <div class="form-group">
+    <label>Tu WhatsApp (solo numeros):</label>
+    <input type="text" id="telefono" placeholder="Ej: 3415123456">
+  </div>
+
+  <div class="form-group">
+    <label>Cantidad de Entradas (max. 10):</label>
+    <input type="number" id="cantidad" min="1" max="10" value="1">
+  </div>
+
+  <div class="form-group">
+    <label>Fecha del Evento:</label>
+    <select id="fecha">
+      <option value="Viernes 20:30">Viernes 20:30</option>
+      <option value="Sabado 21:00">Sabado 21:00</option>
+      <option value="Domingo 19:00">Domingo 19:00</option>
+    </select>
+  </div>
+
+  <button id="btnReservar">Enviar Reserva por WhatsApp</button>
 </div>
 
 <script>
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz9aW8g2kW9C5CVFZjwobRxbap54ACODePr8NR_s9nU4A4fBCe53BqCabNJeHXs0o8/exec";
-
-let tiempoRestante = 300;
+let tiempoRestante = 300; // 5 minutos
 let temporizadorActivo = true;
 
 function actualizarTemporizador() {
@@ -57,15 +59,17 @@ function actualizarTemporizador() {
   const minutos = Math.floor(tiempoRestante / 60);
   const segundos = tiempoRestante % 60;
   const timerDiv = document.getElementById('timerDiv');
-  timerDiv.textContent = 'Tiempo restante: ' + minutos + ':' + (segundos < 10 ? '0' : '') + segundos;
+  timerDiv.textContent = `Tiempo restante: ${minutos}:${segundos < 10 ? '0' : ''}${segundos}`;
+
   if (tiempoRestante <= 60) {
     timerDiv.style.background = '#ffcdd2';
     timerDiv.style.color = '#b71c1c';
   }
+
   if (tiempoRestante <= 0) {
-    timerDiv.innerHTML = 'TIEMPO AGOTADO';
+    timerDiv.textContent = 'TIEMPO AGOTADO';
     document.getElementById('btnReservar').disabled = true;
-    document.getElementById('btnReservar').style.background = '#cccccc';
+    document.getElementById('btnReservar').classList.add('loading');
     temporizadorActivo = false;
   } else {
     tiempoRestante--;
@@ -73,75 +77,39 @@ function actualizarTemporizador() {
   }
 }
 
-function mostrarMensaje(mensaje, tipo) {
-  const messageDiv = document.getElementById('message');
-  messageDiv.innerHTML = mensaje;
-  messageDiv.style.display = 'block';
+function mostrarMensaje(texto, tipo) {
+  const msg = document.getElementById('message');
+  msg.textContent = texto;
+  msg.style.display = 'block';
   if (tipo === 'error') {
-    messageDiv.style.background = '#ffebee';
-    messageDiv.style.color = '#c62828';
-  } else if (tipo === 'success') {
-    messageDiv.style.background = '#e8f5e8';
-    messageDiv.style.color = '#2e7d32';
+    msg.style.background = '#ffebee';
+    msg.style.color = '#c62828';
   } else {
-    messageDiv.style.background = '#e3f2fd';
-    messageDiv.style.color = '#1565c0';
+    msg.style.background = '#e8f5e8';
+    msg.style.color = '#2e7d32';
   }
 }
 
-document.getElementById('btnReservar').onclick = async function() {
+document.getElementById('btnReservar').onclick = function() {
   const nombre = document.getElementById('nombre').value.trim();
-  const telefono = document.getElementById('telefono').value.trim().replace(/\D/g, '');
-  const cantidad = parseInt(document.getElementById('cantidad').value);
+  const telefono = document.getElementById('telefono').value.trim().replace(/\D/g,'');
+  const cantidad = document.getElementById('cantidad').value;
   const fecha = document.getElementById('fecha').value;
 
-  if (!nombre) { mostrarMensaje('Por favor, ingresa tu nombre completo', 'error'); return; }
-  if (!telefono || telefono.length < 8) { mostrarMensaje('Por favor, ingresa un número de WhatsApp válido', 'error'); return; }
-  if (!cantidad || cantidad < 1 || cantidad > 10) { mostrarMensaje('La cantidad debe ser entre 1 y 10 entradas', 'error'); return; }
-
-  const btn = document.getElementById('btnReservar');
-  btn.disabled = true;
-  btn.classList.add('loading');
-  btn.textContent = 'Guardando reserva...';
-  mostrarMensaje('Conectando con el sistema...', 'info');
-
-  try {
-    const formData = new URLSearchParams();
-    formData.append('nombre', nombre);
-    formData.append('telefonoCliente', '549'+telefono);
-    formData.append('cantidad', cantidad);
-    formData.append('fecha', fecha);
-    formData.append('precio', '2500');
-
-    const response = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      body: formData
-    });
-
-    let data = await response.json();
-
-    if (!data || data.status !== 'OK') {
-      data = { status: 'OK', id: 'R-' + Date.now(), montoTotal: cantidad * 2500 };
-    }
-
-    if (data.status === 'OK') {
-      temporizadorActivo = false;
-      const mensaje = `Reserva confirmada\n\nReserva: ${data.id}\nNombre: ${nombre}\nEntradas: ${cantidad}\nFecha: ${fecha}\nTotal: $${data.montoTotal}\n\n¡Gracias!`;
-      mostrarMensaje('✅ ¡RESERVA CONFIRMADA!<br><br>' +
-        '📱 Enviá este mensaje por WhatsApp:<br>' +
-        '<div style="background:#f0f0f0; padding:10px; margin:10px 0; border-radius:5px; font-family:monospace; white-space: pre-line;">' +
-        mensaje + '</div>', 'success');
-      btn.disabled = false;
-      btn.classList.remove('loading');
-      btn.textContent = '✅ Reserva Lista';
-    }
-
-  } catch (error) {
-    mostrarMensaje('Error: ' + error.message, 'error');
-    btn.disabled = false;
-    btn.classList.remove('loading');
-    btn.textContent = 'Reservar y Pagar';
+  if (!nombre || !telefono || cantidad < 1 || cantidad > 10) {
+    mostrarMensaje('Por favor completa todos los campos correctamente', 'error');
+    return;
   }
+
+  // Mensaje para WhatsApp
+  const mensaje = `Reserva La Jirafa\nNombre: ${nombre}\nWhatsApp: ${telefono}\nEntradas: ${cantidad}\nFecha: ${fecha}`;
+  const linkWhatsApp = `https://wa.me/549${telefono}?text=${encodeURIComponent(mensaje)}`;
+
+  // Abrir WhatsApp Web o app móvil
+  window.open(linkWhatsApp, '_blank');
+
+  mostrarMensaje('✅ Mensaje listo para enviar por WhatsApp', 'success');
+  temporizadorActivo = false;
 };
 
 actualizarTemporizador();
