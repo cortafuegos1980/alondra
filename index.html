@@ -73,7 +73,7 @@
 <script>
 // *** 1. CONFIGURACIÓN ÚNICA ***
 // ⚠️ 1. REVISA TU URL DE APPS SCRIPT
-const EXEC_URL = 'https://script.google.com/macros/s/AKfycbw1_-1LFIfXI_yf_5o4ScKXWOQNdBl_pG8nfhoTx-ueyAXy5kPKbByoEPvSCrTTPO77/exec';
+const EXEC_URL = 'https://script.google.com/macros/s/AKfycbxY8HbJ2jkGT7gx7YLWkLTL_h-YGRA9uBefYlDI4MU7RH4A2VM5AYMVD5y2KCZgnO4T/exec';
 
 // Filtro de la obra
 const OBRA_FILTRO_NOMBRE = 'La Jirafa'; 
@@ -245,7 +245,7 @@ document.getElementById('btnReservar').onclick = async function() {
         const data = await response.json();
 
         if (data.status === 'OK') {
-            mostrarMensaje(`✅ ¡RESERVA EXITOSA! ID: ${data.id}. Total a pagar: $${data.montoTotal}. Redirigiendo a WhatsApp...`, 'exito');
+            mostrarMensaje(`�?¡RESERVA EXITOSA! ID: ${data.id}. Total a pagar: $${data.montoTotal}. Redirigiendo a WhatsApp...`, 'exito');
             
             // Construcción del Mensaje de WhatsApp 
             const mensajeWhatsApp = [
@@ -267,12 +267,12 @@ document.getElementById('btnReservar').onclick = async function() {
             
             document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante;
         } else {
-            mostrarMensaje('❌ Error al reservar: ' + data.message, 'error');
+            mostrarMensaje('�?Error al reservar: ' + data.message, 'error');
             startTimer(); 
         }
         
     } catch(err) {
-        mostrarMensaje('❌ Error de conexión o red: ' + err.message, 'error');
+        mostrarMensaje('�?Error de conexión o red: ' + err.message, 'error');
         startTimer(); 
     }
 
