@@ -22,6 +22,15 @@
         padding: 10px;
         border-radius: 5px;
     }
+    /* 🛑 ESTILO DE HONEYPOT - HACE INVISIBLE EL CAMPO DE SPAM 🛑 */
+    .honeypot {
+        display: none; 
+        visibility: hidden;
+        height: 0;
+        width: 0;
+        position: absolute;
+        left: -9999px; 
+    }
 </style>
 </head>
 <body>
@@ -53,12 +62,12 @@
             </select>
     </div>
 
-<div class="form-group honeypot">
+    <div class="form-group honeypot">
         <label for="apellidoBot">No llenar este campo:</label>
         <input type="text" id="apellidoBot" name="apellidoBot">
     </div>
-	
-    <button id="btnReservar">Reservar</button>
+
+    <button id="btnReservar">Reservar y Pagar por WhatsApp</button>
 </div>
 
 <script>
@@ -213,18 +222,13 @@ document.getElementById('btnReservar').onclick = async function() {
         return;
     }
 
-    // 🛑 NUEVA VALIDACIÓN HONEYPOT
+    // 🛑 VALIDACIÓN HONEYPOT (ANTI-SPAM) 🛑
     const apellidoBot = document.getElementById('apellidoBot').value.trim();
     if (apellidoBot.length > 0) {
         mostrarMensaje('🚫 Error de validación de formulario.', 'error');
-        // Detenemos la ejecución aquí sin enviar nada al servidor
         return; 
     }
-    // 🛑 FIN DE VALIDACIÓN HONEYPOT
-
-    const formData = new URLSearchParams();
-    // ... (el resto de tu código de reserva sigue aquí) ...
-};
+    // 🛑 FIN DE VALIDACIÓN HONEYPOT 🛑
 
     const formData = new URLSearchParams();
     formData.append('nombre', nombre);
