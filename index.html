@@ -5,128 +5,148 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reserva Entradas - La Jirafa</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
-  .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-  .timer { background: #ffebee; color: #d32f2f; padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; margin-bottom: 15px; }
-  .form-group { margin-bottom: 15px; }
-  label { display: block; margin-bottom: 5px; font-weight: bold; }
-  input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-  button { width: 100%; padding: 15px; background: #25D366; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
-  button.loading { background: #cccccc; cursor: not-allowed; }
-  .message { padding: 10px; border-radius: 5px; margin-bottom: 15px; display: none; }
-  .cupo { margin-bottom: 15px; font-weight: bold; }
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
+    .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .timer { background: #ffebee; color: #d32f2f; padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; margin-bottom: 15px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+    button { width: 100%; padding: 15px; background: #25D366; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    button.loading { background: #cccccc; cursor: not-allowed; }
+    .message { padding: 10px; border-radius: 5px; margin-bottom: 15px; display: none; }
+    .cupo { margin-bottom: 15px; font-weight: bold; }
 </style>
 </head>
 <body>
 <div class="container">
-  <h2>Reserva Entradas - La Jirafa</h2>
-  
-  <div class="timer" id="timerDiv">Tiempo restante: 5:00</div>
-  <div class="cupo" id="cupoDiv">Entradas disponibles: 150</div>
-  <div id="message" class="message"></div>
-  
-  <div class="form-group">
-    <label>Apellido y Nombre:</label>
-    <input type="text" id="nombre" placeholder="Ej: Maria Gonzalez">
-  </div>
+    <h2>Reserva Entradas - La Jirafa</h2>
+    
+    <div class="timer" id="timerDiv">Tiempo restante: 5:00</div>
+    <div class="cupo" id="cupoDiv">Entradas disponibles: 150</div>
+    <div id="message" class="message"></div>
+    
+    <div class="form-group">
+        <label>Apellido y Nombre:</label>
+        <input type="text" id="nombre" placeholder="Ej: Maria Gonzalez">
+    </div>
 
-  <div class="form-group">
-    <label>Tu WhatsApp (solo números):</label>
-    <input type="text" id="telefono" placeholder="Ej: 3415123456">
-  </div>
+    <div class="form-group">
+        <label>Tu WhatsApp (solo números):</label>
+        <input type="text" id="telefono" placeholder="Ej: 3415123456">
+    </div>
 
-  <div class="form-group">
-    <label>Cantidad de Entradas (max. 10):</label>
-    <input type="number" id="cantidad" min="1" max="10" value="1">
-  </div>
+    <div class="form-group">
+        <label>Cantidad de Entradas (max. 10):</label>
+        <input type="number" id="cantidad" min="1" max="10" value="1">
+    </div>
 
-  <div class="form-group">
-    <label>Fecha del Evento:</label>
-    <select id="fecha">
-      <option value="Viernes 20:30">Viernes 20:30</option>
-      <option value="Sábado 21:00">Sábado 21:00</option>
-      <option value="Domingo 19:00">Domingo 19:00</option>
-    </select>
-  </div>
+    <div class="form-group">
+        <label>Fecha del Evento:</label>
+        <select id="fecha">
+            <option value="Viernes 20:30">Viernes 20:30</option>
+            <option value="Sábado 21:00">Sábado 21:00</option>
+            <option value="Domingo 19:00">Domingo 19:00</option>
+        </select>
+    </div>
 
-  <button id="btnReservar">Enviar Reserva por WhatsApp</button>
+    <button id="btnReservar">Enviar Reserva por WhatsApp</button>
 </div>
 
 <script>
+// *** 1. CONFIGURACIÓN ÚNICA ***
+// ESTA URL DEBE SER LA MISMA DE TU IMPLEMENTACIÓN DE APPS SCRIPT
 const EXEC_URL = 'https://script.google.com/macros/s/AKfycbw1_-1LFIfXI_yf_5o4ScKXWOQNdBl_pG8nfhoTx-ueyAXy5kPKbByoEPvSCrTTPO77/exec';
+let timerTimeout; 
 
-let tiempoRestante = 300;
-let temporizadorActivo = true;
+/* TEMPORIZADOR (Versión Robusta con setInterval) */
+function startTimer() {
+    let duration = 5 * 60; // 5 minutos
 
-function actualizarTemporizador() {
-  if (!temporizadorActivo) return;
-  const minutos = Math.floor(tiempoRestante / 60);
-  const segundos = tiempoRestante % 60;
-  document.getElementById('timerDiv').textContent = 'Tiempo restante: ' + minutos + ':' + (segundos < 10 ? '0' : '') + segundos;
+    function updateTimer() {
+        const minutes = parseInt(duration / 60, 10);
+        const seconds = parseInt(duration % 60, 10);
 
-  if (tiempoRestante <= 0) {
-    temporizadorActivo = false;
-    alert('El tiempo se agotó, vas a ser redirigido.');
-    window.location.href = 'https://www.google.com';
-  } else {
-    tiempoRestante--;
-    setTimeout(actualizarTemporizador, 1000);
-  }
-}
-actualizarTemporizador();
+        const displayMinutes = minutes < 10 ? "0" + minutes : minutes;
+        const displaySeconds = seconds < 10 ? "0" + seconds : seconds;
 
-async function actualizarCupo() {
-  try {
-    const response = await fetch(EXEC_URL);
-    const data = await response.json();
-    if (data.status === 'OK' && data.cupoRestante !== undefined) {
-      document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante;
+        document.getElementById('timerDiv').textContent = "⏱️ Tiempo restante: " + displayMinutes + ":" + displaySeconds;
+
+        if (--duration < 0) {
+            clearInterval(timerTimeout); 
+            document.getElementById('timerDiv').textContent = "¡Tiempo agotado! Refresca la página.";
+            document.getElementById('btnReservar').disabled = true;
+        }
     }
-  } catch(err) {
-    console.error('Error al consultar cupo:', err);
-  }
+    
+    if (timerTimeout) clearInterval(timerTimeout); 
+    timerTimeout = setInterval(updateTimer, 1000);
 }
-actualizarCupo();
 
+/* ACTUALIZAR CUPO */
+async function actualizarCupo() {
+    try {
+        const response = await fetch(EXEC_URL + '?accion=consultarCupo'); 
+        const data = await response.json();
+        if (data.status === 'OK' && data.cupoRestante !== undefined) {
+            document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante;
+        }
+    } catch(err) {
+        console.error('Error al consultar cupo:', err);
+    }
+}
+
+
+/* BOTON RESERVA */
 document.getElementById('btnReservar').onclick = async function() {
-  const nombre = document.getElementById('nombre').value.trim();
-  const telefono = document.getElementById('telefono').value.trim().replace(/\D/g,'');
-  const cantidad = parseInt(document.getElementById('cantidad').value);
-  const fecha = document.getElementById('fecha').value;
+    const nombre = document.getElementById('nombre').value.trim();
+    const telefono = document.getElementById('telefono').value.trim().replace(/\D/g,''); 
+    const cantidad = parseInt(document.getElementById('cantidad').value);
+    const fecha = document.getElementById('fecha').value;
 
-  if (!nombre || !telefono || !cantidad) {
-    alert('Completa todos los campos correctamente.');
-    return;
-  }
+    if (!nombre || !telefono || !cantidad) {
+        alert('Completa todos los campos correctamente.');
+        return;
+    }
 
-  const formData = new URLSearchParams();
-  formData.append('nombre', nombre);
-  formData.append('telefonoCliente', telefono);
-  formData.append('cantidad', cantidad);
-  formData.append('fecha', fecha);
+    const formData = new URLSearchParams();
+    formData.append('nombre', nombre);
+    formData.append('telefonoCliente', telefono);
+    formData.append('cantidad', cantidad);
+    formData.append('fecha', fecha);
 
-  this.disabled = true;
-  this.classList.add('loading');
+    this.disabled = true;
+    this.classList.add('loading');
+    clearInterval(timerTimeout); 
 
-  try {
-    const response = await fetch(EXEC_URL, { method: 'POST', body: formData });
-    const data = await response.json();
+    try {
+        const response = await fetch(EXEC_URL, { method: 'POST', body: formData }); 
+        const data = await response.json();
 
-    if (data.status === 'OK') {
-  alert(`Reserva confirmada: ${data.id}\nCupo restante: ${data.cupoRestante}`);
-  const mensaje = encodeURIComponent(`Hola! Confirmo mi reserva ${data.id} de ${cantidad} entradas para La Jirafa.`);
-  window.open(`https://wa.me/${telefono}?text=${mensaje}`, '_blank');
-  
-  // USAR EL CUPO REAL QUE VIENE DE GOOGLE APPS SCRIPT
-  document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante;
-}
-  } catch(err) {
-    alert('Error al enviar reserva: ' + err.message);
-  }
+        if (data.status === 'OK') {
+            alert(`Reserva confirmada: ${data.id}\nNuevo cupo restante: ${data.cupoRestante}`);
+            const mensaje = encodeURIComponent(`¡Hola! Confirmo mi reserva ${data.id} de ${cantidad} entradas para La Jirafa. Monto: $${data.montoTotal}.`);
+            
+            window.open(`https://wa.me/${telefono}?text=${mensaje}`, '_blank');
+            
+            document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante;
+        } else {
+            alert('Error al reservar: ' + data.message);
+            startTimer(); 
+        }
+        
+    } catch(err) {
+        alert('Error de conexión o red: ' + err.message);
+        startTimer(); 
+    }
 
-  this.disabled = false;
-  this.classList.remove('loading');
+    this.disabled = false;
+    this.classList.remove('loading');
 };
+
+
+// *** 4. INICIAR LAS FUNCIONES AL CARGAR ***
+actualizarCupo();
+startTimer(); 
 </script>
 </body>
 </html>
