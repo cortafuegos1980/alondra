@@ -213,6 +213,19 @@ document.getElementById('btnReservar').onclick = async function() {
         return;
     }
 
+    // 🛑 NUEVA VALIDACIÓN HONEYPOT
+    const apellidoBot = document.getElementById('apellidoBot').value.trim();
+    if (apellidoBot.length > 0) {
+        mostrarMensaje('🚫 Error de validación de formulario.', 'error');
+        // Detenemos la ejecución aquí sin enviar nada al servidor
+        return; 
+    }
+    // 🛑 FIN DE VALIDACIÓN HONEYPOT
+
+    const formData = new URLSearchParams();
+    // ... (el resto de tu código de reserva sigue aquí) ...
+};
+
     const formData = new URLSearchParams();
     formData.append('nombre', nombre);
     formData.append('telefonoCliente', telefonoCliente); 
