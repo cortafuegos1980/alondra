@@ -85,13 +85,21 @@ function startTimer() {
 /* ACTUALIZAR CUPO */
 async function actualizarCupo() {
     try {
+        // Hacemos la consulta al servidor de Apps Script
         const response = await fetch(EXEC_URL + '?accion=consultarCupo'); 
         const data = await response.json();
+        
         if (data.status === 'OK' && data.cupoRestante !== undefined) {
+            // ✅ ÉXITO: Mostramos el número real
             document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante;
+        } else {
+            // ❌ ERROR: Mostramos un mensaje de error si el servidor no responde OK
+            document.getElementById('cupoDiv').textContent = 'Error al verificar cupo.';
         }
     } catch(err) {
+        // 🛑 ERROR DE CONEXIÓN: Mostramos un mensaje de error si no se conecta
         console.error('Error al consultar cupo:', err);
+        document.getElementById('cupoDiv').textContent = 'Error de conexión.';
     }
 }
 
