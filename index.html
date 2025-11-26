@@ -15,6 +15,15 @@
     button.loading { background: #cccccc; cursor: not-allowed; }
     .message { padding: 10px; border-radius: 5px; margin-bottom: 15px; display: none; }
     .cupo { margin-bottom: 15px; font-weight: bold; }
+	
+	/* Color verde claro para el estado de carga */
+.buscando { 
+    background: #e6ffe6; /* Verde claro suave */
+    color: #155724; 
+    border: 1px solid #c3e6cb;
+    padding: 10px;
+    border-radius: 5px;
+}
 </style>
 </head>
 <body>
@@ -91,7 +100,7 @@ async function actualizarCupo() {
         
         if (data.status === 'OK' && data.cupoRestante !== undefined) {
             // ✅ ÉXITO: Mostramos el número real
-            document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante;
+            document.getElementById('cupoDiv').textContent = 'Disponibles: ' + data.cupoRestante;
         } else {
             // ❌ ERROR: Mostramos un mensaje de error si el servidor no responde OK
             document.getElementById('cupoDiv').textContent = 'Error al verificar cupo.';
