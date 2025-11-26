@@ -1,31 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cargando Obra...</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
+    .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .timer { background: #ffebee; color: #d32f2f; padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; margin-bottom: 15px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+    button { width: 100%; padding: 15px; background: #25D366; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    button.loading { background: #cccccc; cursor: not-allowed; }
+    .message { padding: 10px; border-radius: 5px; margin-bottom: 15px; display: none; }
+    .cupo { margin-bottom: 15px; font-weight: bold; }
+    .buscando {	
+        background: #e6ffe6; 
+        color: #155724;	
+        border: 1px solid #c3e6cb;
+        padding: 10px;
+        border-radius: 5px;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h2 id="tituloObra">Cargando Obra...</h2>
+    
+    <div class="timer" id="timerDiv">Tiempo restante: 5:00</div>
+    <div class="cupo buscando" id="cupoDiv">Cargando eventos...</div>
+    <div id="message" class="message"></div>
+    
+    <div class="form-group">
+        <label>Apellido y Nombre:</label>
+        <input type="text" id="nombre" placeholder="Ej: Maria Gonzalez">
+    </div>
+
+    <div class="form-group">
+        <label>Tu WhatsApp (Sólo números, sin 0 ni 15):</label>
+        <input type="tel" id="telefono" placeholder="Ej: 3415123456">
+    </div>
+
+    <div class="form-group">
+        <label>Cantidad:</label>
+        <input type="number" id="cantidad" min="1" max="10" value="1">
+    </div>
+
+    <div class="form-group">
+        <label>Fecha del Evento:</label>
+        <select id="fecha">
+            </select>
+    </div>
+
+    <button id="btnReservar">Reservar y Pagar por WhatsApp</button>
+</div>
+
 <script>
 // *** 1. CONFIGURACIÓN ÚNICA ***
+// ⚠️ 1. REVISA TU URL DE APPS SCRIPT
 const EXEC_URL = 'https://script.google.com/macros/s/AKfycbw1_-1LFIfXI_yf_5o4ScKXWOQNdBl_pG8nfhoTx-ueyAXy5kPKbByoEPvSCrTTPO77/exec';
 
-// ¡FILTRO CRÍTICO! (Cambia esto a 'Rotos' en rotos.html)
+// Filtro de la obra
 const OBRA_FILTRO_NOMBRE = 'La Jirafa'; 
+
+// ⚠️ 2. REVISA TU NÚMERO DE GESTOR
+const MANAGER_WHATSAPP_NUMBER = '5493411234567'; // <-- ¡REEMPLAZA ESTE NÚMERO POR EL TUYO REAL! (con código de país, sin el signo +)
 
 let timerTimeout; 
 let todosLosCupos = {}; 
-//  ¡NÚMERO DEL GESTOR (CON CÓDIGO DE PAÍS, SIN EL SIGNO +)
-const MANAGER_WHATSAPP_NUMBER = '5493492594940';
 
 /* Función para mostrar mensajes de estado */
 function mostrarMensaje(texto, tipo = 'error') {
     const messageDiv = document.getElementById('message');
     messageDiv.textContent = texto;
     messageDiv.style.display = 'block';
-    messageDiv.className = 'message'; // Reiniciar clase
+    messageDiv.className = 'message'; 
 
     if (tipo === 'exito') {
-        messageDiv.style.backgroundColor = '#d4edda'; // Fondo verde claro
-        messageDiv.style.color = '#155724'; // Texto verde oscuro
+        messageDiv.style.backgroundColor = '#d4edda'; 
+        messageDiv.style.color = '#155724'; 
     } else if (tipo === 'error') {
-        messageDiv.style.backgroundColor = '#f8d7da'; // Fondo rojo claro
-        messageDiv.style.color = '#721c24'; // Texto rojo oscuro
+        messageDiv.style.backgroundColor = '#f8d7da'; 
+        messageDiv.style.color = '#721c24'; 
     }
     
-    // Ocultar el mensaje después de 8 segundos (8000 ms)
     setTimeout(() => {
         messageDiv.style.display = 'none';
     }, 8000); 
@@ -137,21 +196,21 @@ function mostrarCupoSeleccionado() {
 }
 
 
-/* BOTON RESERVA (¡ALERTS REMOVIDOS!) */
+/* BOTON RESERVA */
 document.getElementById('btnReservar').onclick = async function() {
     const nombre = document.getElementById('nombre').value.trim();
-    const telefono = document.getElementById('telefono').value.trim().replace(/\D/g,''); 
+    const telefonoCliente = document.getElementById('telefono').value.trim().replace(/\D/g,''); 
     const cantidad = parseInt(document.getElementById('cantidad').value);
     const fecha = document.getElementById('fecha').value; 
 
-    if (!nombre || !telefono || !cantidad || !fecha) {
+    if (!nombre || !telefonoCliente || !cantidad || !fecha) {
         mostrarMensaje('⚠️ Completa todos los campos correctamente.', 'error');
         return;
     }
 
     const formData = new URLSearchParams();
     formData.append('nombre', nombre);
-    formData.append('telefonoCliente', telefono);
+    formData.append('telefonoCliente', telefonoCliente); 
     formData.append('cantidad', cantidad);
     formData.append('fecha', fecha); 
 
@@ -164,13 +223,13 @@ document.getElementById('btnReservar').onclick = async function() {
         const data = await response.json();
 
         if (data.status === 'OK') {
-            // Muestra mensaje de éxito en la página
             mostrarMensaje(`✅ ¡RESERVA EXITOSA! ID: ${data.id}. Total a pagar: $${data.montoTotal}. Redirigiendo a WhatsApp...`, 'exito');
             
             // Construcción del Mensaje de WhatsApp 
             const mensajeWhatsApp = [
                 `¡Hola! Mi reserva es la ID: *${data.id}*.`,
                 `Confirmo la reserva de *${cantidad}* entradas.`,
+                `Mi teléfono (Cliente) es: *${telefonoCliente}*`, 
                 `El monto total es de *$${data.montoTotal}*.`,
                 ``,
                 `➡️ *LINK DE PAGO MERCADO PAGO:*`,
@@ -181,18 +240,16 @@ document.getElementById('btnReservar').onclick = async function() {
 
             const mensajeURL = encodeURIComponent(mensajeWhatsApp);
             
-            // Abre WhatsApp en una nueva pestaña 
-            window.open(`https://wa.me/${telefono}?text=${mensajeURL}`, '_blank');
+            // Abre WhatsApp con el número del Gestor
+            window.open(`https://wa.me/${MANAGER_WHATSAPP_NUMBER}?text=${mensajeURL}`, '_blank');
             
             document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante;
         } else {
-            // Muestra mensaje de error en la página
             mostrarMensaje('❌ Error al reservar: ' + data.message, 'error');
             startTimer(); 
         }
         
     } catch(err) {
-        // Muestra mensaje de error de conexión en la página
         mostrarMensaje('❌ Error de conexión o red: ' + err.message, 'error');
         startTimer(); 
     }
@@ -213,3 +270,5 @@ fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTR
     .then(data => cargarOpcionesEventos(data))
     .catch(err => console.error('Error al cargar eventos:', err));
 </script>
+</body>
+</html>
