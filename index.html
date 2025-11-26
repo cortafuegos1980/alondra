@@ -113,13 +113,13 @@ document.getElementById('btnReservar').onclick = async function() {
     const data = await response.json();
 
     if (data.status === 'OK') {
-      alert(`Reserva confirmada: ${data.id}\nCupo restante: ${data.cupoRestante}`);
-      const mensaje = encodeURIComponent(`Hola! Confirmo mi reserva ${data.id} de ${cantidad} entradas para La Jirafa.`);
-      window.open(`https://wa.me/${telefono}?text=${mensaje}`, '_blank');
-      actualizarCupo();
-    } else {
-      alert(data.message);
-    }
+  alert(`Reserva confirmada: ${data.id}\nCupo restante: ${data.cupoRestante}`);
+  const mensaje = encodeURIComponent(`Hola! Confirmo mi reserva ${data.id} de ${cantidad} entradas para La Jirafa.`);
+  window.open(`https://wa.me/${telefono}?text=${mensaje}`, '_blank');
+  actualizarCupo(); // ← ESTA LÍNEA DEBE ESTAR
+} else {
+  alert(data.message);
+}
   } catch(err) {
     alert('Error al enviar reserva: ' + err.message);
   }
