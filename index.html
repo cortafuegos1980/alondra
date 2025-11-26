@@ -53,8 +53,7 @@
 </div>
 
 <script>
-
-const EXEC_URL = 'https://cors-anywhere.herokuapp.com/https://script.google.com/macros/s/AKfycbw1_-1LFIfXI_yf_5o4ScKXWOQNdBl_pG8nfhoTx-ueyAXy5kPKbByoEPvSCrTTPO77/exec';
+const EXEC_URL = 'https://script.google.com/macros/s/AKfycbw1_-1LFIfXI_yf_5o4ScKXWOQNdBl_pG8nfhoTx-ueyAXy5kPKbByoEPvSCrTTPO77/exec';
 
 let tiempoRestante = 300;
 let temporizadorActivo = true;
@@ -80,13 +79,12 @@ async function actualizarCupo() {
   try {
     const response = await fetch(EXEC_URL);
     const data = await response.json();
-    if (data.status === 'OK') {
-  alert(`Reserva confirmada: ${data.id}\nCupo restante: ${data.cupoRestante}`);
-  const mensaje = encodeURIComponent(`Hola! Confirmo mi reserva ${data.id} de ${cantidad} entradas para La Jirafa.`);
-  window.open(`https://wa.me/${telefono}?text=${mensaje}`, '_blank');
-  document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante; // ← LÍNEA NUEVA
-} else {
-  alert(data.message);
+    if (data.status === 'OK' && data.cupoRestante !== undefined) {
+      document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante;
+    }
+  } catch(err) {
+    console.error('Error al consultar cupo:', err);
+  }
 }
 actualizarCupo();
 
@@ -115,13 +113,13 @@ document.getElementById('btnReservar').onclick = async function() {
     const data = await response.json();
 
     if (data.status === 'OK') {
-  alert(`Reserva confirmada: ${data.id}\nCupo restante: ${data.cupoRestante}`);
-  const mensaje = encodeURIComponent(`Hola! Confirmo mi reserva ${data.id} de ${cantidad} entradas para La Jirafa.`);
-  window.open(`https://wa.me/${telefono}?text=${mensaje}`, '_blank');
-  actualizarCupo(); // ← ESTA LÍNEA DEBE ESTAR
-} else {
-  alert(data.message);
-}
+      alert(`Reserva confirmada: ${data.id}\nCupo restante: ${data.cupoRestante}`);
+      const mensaje = encodeURIComponent(`Hola! Confirmo mi reserva ${data.id} de ${cantidad} entradas para La Jirafa.`);
+      window.open(`https://wa.me/${telefono}?text=${mensaje}`, '_blank');
+      actualizarCupo();
+    } else {
+      alert(data.message);
+    }
   } catch(err) {
     alert('Error al enviar reserva: ' + err.message);
   }
