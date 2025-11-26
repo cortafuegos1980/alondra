@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reserva Entradas - Rotos de Amor</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
+    .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .timer { background: #ffebee; color: #d32f2f; padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; margin-bottom: 15px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+    button { width: 100%; padding: 15px; background: #25D366; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    button.loading { background: #cccccc; cursor: not-allowed; }
+    .message { padding: 10px; border-radius: 5px; margin-bottom: 15px; display: none; }
+    .cupo { margin-bottom: 15px; font-weight: bold; }
+	/* Color verde claro para el estado de carga */
+    .buscando {	
+        background: #e6ffe6; /* Verde claro suave */
+        color: #155724;	
+        border: 1px solid #c3e6cb;
+        padding: 10px;
+        border-radius: 5px;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h2>Reserva Entradas - La Jirafa</h2>
+    
+    <div class="timer" id="timerDiv">Tiempo restante: 5:00</div>
+    <div class="cupo buscando" id="cupoDiv">Cargando eventos...</div>
+    <div id="message" class="message"></div>
+    
+    <div class="form-group">
+        <label>Apellido y Nombre:</label>
+        <input type="text" id="nombre" placeholder="Ej: Maria Gonzalez">
+    </div>
+
+    <div class="form-group">
+        <label>Tu WhatsApp:</label>
+        <input type="text" id="telefono" placeholder="Ej: 3415123456">
+    </div>
+
+    <div class="form-group">
+        <label>Cantidad:</label>
+        <input type="number" id="cantidad" min="1" max="10" value="1">
+    </div>
+
+    <div class="form-group">
+        <label>Fecha del Evento:</label>
+        <select id="fecha">
+            </select>
+    </div>
+
+    <button id="btnReservar">Reservar y Pagar por WhatsApp</button>
+</div>
+
+<script>
+// *** 1. CONFIGURACIÓN ÚNICA ***
+// ESTA URL DEBE SER LA MISMA DE TU IMPLEMENTACIÓN DE APPS SCRIPT
+const EXEC_URL = 'https://script.google.com/macros/s/AKfycbw1_-1LFIfXI_yf_5o4ScKXWOQNdBl_pG8nfhoTx-ueyAXy5kPKbByoEPvSCrTTPO77/exec';
+let timerTimeout; 
+let todosLosCupos = {}; // Variable para guardar los cupos de todos los eventos
+
+/* TEMPORIZADOR */
+function startTimer() {
+    let duration = 5 * 60; // 5 minutos
+
+    function updateTimer() {
+        const minutes = parseInt(duration / 60, 10);
+        const seconds = parseInt(duration % 60, 10);
+
+        const displayMinutes = minutes < 10 ? "0" + minutes : minutes;
+        const displaySeconds = seconds < 10 ? "0" + seconds : seconds;
+
+        document.getElementById('timerDiv').textContent = "⏱️ Tiempo restante: " + displayMinutes + ":" + displaySeconds;
+
+        if (--duration < 0) {
+            clearInterval(timerTimeout); 
+            document.getElementById('timerDiv').textContent = "¡Tiempo agotado! Refresca la página.";
+            document.getElementById('btnReservar').disabled = true;
+        }
+    }
+    
+    if (timerTimeout) clearInterval(timerTimeout); 
+    timerTimeout = setInterval(updateTimer, 1000);
+}
+
+/* CARGAR OPCIONES DEL EVENTO (¡NUEVO!) */
+function cargarOpcionesEventos(opciones) {
+    const select = document.getElementById('fecha');
+    
+    // Limpiar opciones estáticas
+    select.innerHTML = ''; 
+    
+    if (opciones.length === 0) {
+        const opt = document.createElement('option');
+        opt.textContent = "No hay eventos disponibles";
+        select.appendChild(opt);
+        document.getElementById('cupoDiv').textContent = 'No hay eventos configurados.';
+        return;
+    }
+
+    opciones.forEach(opcion => {
+        const opt = document.createElement('option');
+        opt.value = opcion.id; // ID_EVENTO (ej: JIRAFA_VIE)
+        opt.textContent = opcion.texto; // FECHA_HORA (Texto visible)
+        select.appendChild(opt);
+    });
+    
+    // Después de cargar las opciones, actualizamos el cupo para mostrar el del primer evento
+    actualizarCupo();
+}
+
+/* ACTUALIZAR CUPO */
+async function actualizarCupo() {
+    const cupoDiv = document.getElementById('cupoDiv');
+    
+    // 🟢 1. INICIAR CARGA
+    cupoDiv.textContent = 'Buscando entradas...';
+    cupoDiv.classList.add('buscando'); 
+    
+    try {
+        // La consulta al servidor ahora devuelve todos los cupos
+        const response = await fetch(EXEC_URL + '?accion=consultarCupo'); 
+        const data = await response.json();
+        
+        // 🔴 2. FINALIZAR CARGA (Éxito)
+        cupoDiv.classList.remove('buscando'); 
+
+        if (data.status === 'OK' && data.cupos) {
+            todosLosCupos = data.cupos; // Guardamos todos los cupos
+            mostrarCupoSeleccionado(); // Mostramos el cupo de la opción actual
+        } else {
+            cupoDiv.textContent = 'Error al verificar cupo.';
+        }
+    } catch(err) {
+        // 🔴 3. FINALIZAR CARGA (Error)
+        console.error('Error al consultar cupo:', err);
+        cupoDiv.classList.remove('buscando');
+        cupoDiv.textContent = 'Error de conexión.';
+    }
+}
+
+/* MOSTRAR CUPO SELECCIONADO (¡NUEVO!) */
+function mostrarCupoSeleccionado() {
+    const selectFecha = document.getElementById('fecha');
+    const idSeleccionado = selectFecha.value;
+    const cupoDiv = document.getElementById('cupoDiv');
+    
+    // Si la clave existe en el objeto de cupos
+    if (todosLosCupos.hasOwnProperty(idSeleccionado)) {
+        const cupoRestante = todosLosCupos[idSeleccionado];
+        cupoDiv.textContent = 'Entradas disponibles: ' + cupoRestante;
+    } else {
+        cupoDiv.textContent = 'Selecciona una función para ver disponibilidad.';
+    }
+}
+
+
+/* BOTON RESERVA (¡ACTUALIZADO PARA PAGO Y CUPOS!) */
+document.getElementById('btnReservar').onclick = async function() {
+    const nombre = document.getElementById('nombre').value.trim();
+    const telefono = document.getElementById('telefono').value.trim().replace(/\D/g,''); 
+    const cantidad = parseInt(document.getElementById('cantidad').value);
+    const fecha = document.getElementById('fecha').value; // ¡Ahora es el ID_EVENTO!
+
+    if (!nombre || !telefono || !cantidad || !fecha) {
+        alert('Completa todos los campos correctamente.');
+        return;
+    }
+
+    const formData = new URLSearchParams();
+    formData.append('nombre', nombre);
+    formData.append('telefonoCliente', telefono);
+    formData.append('cantidad', cantidad);
+    formData.append('fecha', fecha); // Enviamos el ID_EVENTO
+
+    this.disabled = true;
+    this.classList.add('loading');
+    clearInterval(timerTimeout); 
+
+    try {
+        const response = await fetch(EXEC_URL, { method: 'POST', body: formData }); 
+        const data = await response.json();
+
+        if (data.status === 'OK') {
+            // 1. Mensaje de Alerta (Feedback Inmediato)
+            alert(`✅ ¡RESERVA EXITOSA! ID: ${data.id}\nTotal a pagar: $${data.montoTotal}\n\nPresiona OK para ir a WhatsApp y finalizar el pago.`);
+            
+            // 2. Construcción del Mensaje de WhatsApp (¡Mercado Pago!)
+            const mensajeWhatsApp = [
+                `¡Hola! Mi reserva es la ID: *${data.id}*.`,
+                `Confirmo la reserva de *${cantidad}* entradas.`,
+                `El monto total es de *$${data.montoTotal}*.`,
+                ``,
+                `➡️ *LINK DE PAGO MERCADO PAGO:*`,
+                `${data.linkPago}`, // Link que viene de la hoja CONFIG
+                ``,
+                `*IMPORTANTE:* Si el pago no se realiza en 5 minutos, la reserva puede cancelarse.`
+            ].join('\n'); 
+
+            const mensajeURL = encodeURIComponent(mensajeWhatsApp);
+            
+            // 3. Abrir WhatsApp (al propio cliente para que guarde la info)
+            window.open(`https://wa.me/${telefono}?text=${mensajeURL}`, '_blank');
+            
+            // 4. Actualizar el cupo localmente (en la UI)
+            document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante;
+        } else {
+            alert('❌ Error al reservar: ' + data.message);
+            startTimer(); 
+        }
+        
+    } catch(err) {
+        alert('Error de conexión o red: ' + err.message);
+        startTimer(); 
+    }
+
+    this.disabled = false;
+    this.classList.remove('loading');
+};
+
+
+// Agregamos un "listener" para que el cupo se actualice CADA VEZ que el Usuario Final cambia la fecha.
+document.getElementById('fecha').addEventListener('change', mostrarCupoSeleccionado);
+
+
+// *** 4. INICIAR LAS FUNCIONES AL CARGAR ***
+startTimer(); 
+// Usamos fetch directo para cargar las opciones de eventos al inicio
+fetch(EXEC_URL + '?accion=obtenerOpciones')
+    .then(response => response.json())
+    .then(data => cargarOpcionesEventos(data))
+    .catch(err => console.error('Error al cargar eventos:', err));
+</script>
+</body>
+</html>
