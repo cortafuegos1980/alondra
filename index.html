@@ -84,9 +84,9 @@ async function actualizarCupo() {
   alert(`Reserva confirmada: ${data.id}\nCupo restante: ${data.cupoRestante}`);
   const mensaje = encodeURIComponent(`Hola! Confirmo mi reserva ${data.id} de ${cantidad} entradas para La Jirafa.`);
   window.open(`https://wa.me/${telefono}?text=${mensaje}`, '_blank');
-  
-  // ACTUALIZAR CUPO MANUALMENTE CON EL DATO QUE YA TENEMOS
-  document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante;
+  document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante; // ← LÍNEA NUEVA
+} else {
+  alert(data.message);
 }
 actualizarCupo();
 
