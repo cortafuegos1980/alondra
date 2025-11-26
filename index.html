@@ -91,24 +91,32 @@ function startTimer() {
     timerTimeout = setInterval(updateTimer, 1000);
 }
 
-/* ACTUALIZAR CUPO */
+* ACTUALIZAR CUPO (CORREGIDO) */
 async function actualizarCupo() {
+    const cupoDiv = document.getElementById('cupoDiv');
+    
+    // 🟢 1. INICIAR CARGA: Cambiar texto y aplicar estilo verde claro (CORRECCIÓN CLAVE)
+    cupoDiv.textContent = 'Buscando entradas...';
+    cupoDiv.classList.add('buscando'); 
+    
     try {
-        // Hacemos la consulta al servidor de Apps Script
         const response = await fetch(EXEC_URL + '?accion=consultarCupo'); 
         const data = await response.json();
         
+        // 🔴 2. FINALIZAR CARGA (Éxito): Quitar estilo, mostrar resultado
+        cupoDiv.classList.remove('buscando'); 
+
         if (data.status === 'OK' && data.cupoRestante !== undefined) {
-            // ✅ ÉXITO: Mostramos el número real
-            document.getElementById('cupoDiv').textContent = 'Disponibles: ' + data.cupoRestante;
+            // Se usa "Entradas disponibles" por consistencia con la reserva exitosa
+            cupoDiv.textContent = 'Entradas disponibles: ' + data.cupoRestante;
         } else {
-            // ❌ ERROR: Mostramos un mensaje de error si el servidor no responde OK
-            document.getElementById('cupoDiv').textContent = 'Error al verificar cupo.';
+            cupoDiv.textContent = 'Error al verificar cupo.';
         }
     } catch(err) {
-        // 🛑 ERROR DE CONEXIÓN: Mostramos un mensaje de error si no se conecta
+        // 🔴 3. FINALIZAR CARGA (Error): Quitar estilo, mostrar error
         console.error('Error al consultar cupo:', err);
-        document.getElementById('cupoDiv').textContent = 'Error de conexión.';
+        cupoDiv.classList.remove('buscando');
+        cupoDiv.textContent = 'Error de conexión.';
     }
 }
 
