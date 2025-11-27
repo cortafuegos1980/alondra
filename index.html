@@ -184,8 +184,8 @@ function cargarOpcionesEventos(opciones) {
         if (todosLosCupos.hasOwnProperty(opcion.id) && todosLosCupos[opcion.id] <= 0) {
             textoOpcion += ' (AGOTADO)';
             
-            // 💡 CAMBIO CLAVE: Quitamos 'opt.disabled = true;'.
-            // Solo aplicamos el color gris para mantener la indicación visual.
+            // ✅ CRUCIAL: Solo aplicamos el estilo visual (gris)
+            // NO se usa 'opt.disabled = true;' para que el usuario pueda seleccionarla.
             opt.style.color = '#a0a0a0'; 
         }
         
@@ -193,14 +193,9 @@ function cargarOpcionesEventos(opciones) {
         select.appendChild(opt);
     });
     
-    // Llamamos para mostrar el cupo visible y el estado del botón
+    // Llamamos para que se muestre el cupo del primer elemento (o el seleccionado)
     mostrarCupoSeleccionado(); 
 }
-    
-    // Llamamos para mostrar el cupo visible y el estado del botón
-    mostrarCupoSeleccionado(); 
-}
-
 /* ACTUALIZAR CUPO */
 async function actualizarCupo() {
     const cupoDiv = document.getElementById('cupoDiv');
@@ -367,4 +362,5 @@ async function actualizarCupoInicial() {
 </script>
 </body>
 </html>
+
 
