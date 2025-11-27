@@ -107,8 +107,10 @@ function mostrarMensaje(texto, tipo = 'error') {
         }, 8000); 
 
     } else if (tipo === 'error') {
-        messageDiv.style.backgroundColor = '#f8d7da'; 
-        messageDiv.style.color = '#721c24'; 
+        messageDiv.style.backgroundColor = '#f8d7da';
+    messageDiv.style.color = '#721c24';
+    messageDiv.style.fontWeight = 'bold';
+    messageDiv.style.textTransform = 'uppercase'; 
         
         // 🛑 FIX: Mensaje de ERROR PERMANECE visible (NO se usa setTimeout)
     }
@@ -324,6 +326,7 @@ fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTR
 </script>
 </body>
 </html>
+
 
 
 
