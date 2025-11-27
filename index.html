@@ -9,18 +9,8 @@
     .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     .timer { background: #ffebee; color: #d32f2f; padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; margin-bottom: 15px; }
     .form-group { margin-bottom: 15px; }
-    
-    /* 💡 CORRECCIÓN DE FUENTE */
-    label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 16px; } 
-    input, select { 
-        width: 100%; 
-        padding: 10px; 
-        border: 1px solid #ddd; 
-        border-radius: 5px; 
-        box-sizing: border-box; 
-        font-size: 16px; /* 💡 CORRECCIÓN DE FUENTE */
-    }
-    
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
     button { width: 100%; padding: 15px; background: #25D366; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
     button.loading { background: #cccccc; cursor: not-allowed; }
     .message { padding: 10px; border-radius: 5px; margin-bottom: 15px; display: none; }
@@ -56,7 +46,8 @@
     </div>
 
     <div class="form-group">
-        <label>Tu WhatsApp (Sin 0 ni 15):</label> <input type="tel" id="telefono" placeholder="Ej: 3415123456">
+        <label>Tu WhatsApp (Sólo números, sin 0 ni 15):</label>
+        <input type="tel" id="telefono" placeholder="Ej: 3415123456">
     </div>
 
     <div class="form-group">
@@ -79,23 +70,24 @@
 </div>
 
 <script>
-// *** 1. CONFIGURACIÓN CRUCIAL - REEMPLAZAR ***
-// 💡 URL DE TU NUEVO DESPLIEGUE. ¡ESTE ES EL PUNTO MÁS IMPORTANTE!
-const EXEC_URL = 'PEGA_AQUÍ_TU_NUEVA_URL_DE_APPS_SCRIPT'; // <--- ¡CAMBIAR AQUÍ!
+// *** 1. CONFIGURACIÓN CRUCIAL ***
+// 💡 1. REVISA TU URL DE APPS SCRIPT. DEBE SER LA ÚLTIMA DE TU DEPLOYMENT ACTIVO
+const EXEC_URL = 'https://script.google.com/macros/s/AKfycbxY8HbJ2jkGT7gx7YLWkLTL_h-YGRA9uBefYlDI4MU7RH4A2VM5AYMVD5y2KCZgnO4T/exec';
 
 // Filtro de la obra
-const OBRA_FILTRO_NOMBRE = 'La Jirafa'; // <--- ¡REVISAR!
+const OBRA_FILTRO_NOMBRE = 'La Jirafa'; 
 
-// 💡 TU NÚMERO DE GESTOR
-const MANAGER_WHATSAPP_NUMBER = '5493492594940'; // <--- ¡REVISAR!
+// 💡 2. REVISA TU NÚMERO DE GESTOR
+const MANAGER_WHATSAPP_NUMBER = '5493492594940'; 
 
-let timerTimeout; 
-let todosLosCupos = {}; 
+let timerTimeout; 
+let todosLosCupos = {}; 
 
 /* Función para mostrar mensajes de estado */
 function mostrarMensaje(texto, tipo = 'error') {
     const messageDiv = document.getElementById('message');
     
+    // Si no hay texto, ocultar el div y salir.
     if (!texto) {
         messageDiv.style.display = 'none';
         return;
@@ -103,17 +95,22 @@ function mostrarMensaje(texto, tipo = 'error') {
 
     messageDiv.textContent = texto;
     messageDiv.style.display = 'block';
-    messageDiv.className = 'message'; 
+    messageDiv.className = 'message'; 
 
     if (tipo === 'exito') {
-        messageDiv.style.backgroundColor = '#d4edda'; 
-        messageDiv.style.color = '#155724'; 
+        messageDiv.style.backgroundColor = '#d4edda'; 
+        messageDiv.style.color = '#155724'; 
+        
+        // Mensaje de ÉXITO desaparece (porque viene una redirección)
         setTimeout(() => {
             messageDiv.style.display = 'none';
-        }, 8000); 
+        }, 8000); 
+
     } else if (tipo === 'error') {
-        messageDiv.style.backgroundColor = '#f8d7da'; 
-        messageDiv.style.color = '#721c24'; 
+        messageDiv.style.backgroundColor = '#f8d7da'; 
+        messageDiv.style.color = '#721c24'; 
+        
+        // 🛑 FIX: Mensaje de ERROR PERMANECE visible (NO se usa setTimeout)
     }
 }
 
@@ -121,8 +118,12 @@ function mostrarMensaje(texto, tipo = 'error') {
 async function cargarNombreObra() {
     try {
         const url = EXEC_URL + '?accion=obtenerNombre&obra=' + encodeURIComponent(OBRA_FILTRO_NOMBRE);
-        const response = await fetch(url); 
-        if (!response.ok) { throw new Error(`Error HTTP: ${response.status}`); }
+        const response = await fetch(url); 
+        
+        if (!response.ok) {
+             throw new Error(`Error HTTP: ${response.status}`);
+        }
+        
         const data = await response.json();
         
         if (data.status === 'OK' && data.nombre) {
@@ -140,115 +141,100 @@ async function cargarNombreObra() {
 
 /* TEMPORIZADOR */
 function startTimer() {
-    let duration = 5 * 60; 
+    let duration = 5 * 60; 
+
     function updateTimer() {
         const minutes = parseInt(duration / 60, 10);
         const seconds = parseInt(duration % 60, 10);
+
         const displayMinutes = minutes < 10 ? "0" + minutes : minutes;
         const displaySeconds = seconds < 10 ? "0" + seconds : seconds;
-        document.getElementById('timerDiv').textContent = "⏱️ Tiempo restante: " + displayMinutes + ":" + displaySeconds; 
+
+        document.getElementById('timerDiv').textContent = "⏱️ Tiempo restante: " + displayMinutes + ":" + displaySeconds; 
+
         if (--duration < 0) {
-            clearInterval(timerTimeout); 
+            clearInterval(timerTimeout); 
             document.getElementById('btnReservar').disabled = true;
         }
     }
-    if (timerTimeout) clearInterval(timerTimeout); 
+    
+    if (timerTimeout) clearInterval(timerTimeout); 
     timerTimeout = setInterval(updateTimer, 1000);
 }
 
 /* CARGAR OPCIONES DEL EVENTO */
 function cargarOpcionesEventos(opciones) {
     const select = document.getElementById('fecha');
-    select.innerHTML = ''; 
+    select.innerHTML = ''; 
     
     if (opciones.length === 0) {
         const opt = document.createElement('option');
         opt.textContent = "No hay eventos disponibles";
         select.appendChild(opt);
         document.getElementById('cupoDiv').textContent = 'No hay eventos configurados para ' + OBRA_FILTRO_NOMBRE + '.';
-        document.getElementById('btnReservar').disabled = true;
         return;
     }
 
     opciones.forEach(opcion => {
         const opt = document.createElement('option');
-        opt.value = opcion.id; 
-        
-        let textoOpcion = opcion.texto;
-        if (todosLosCupos.hasOwnProperty(opcion.id) && todosLosCupos[opcion.id] <= 0) {
-            textoOpcion += ' (AGOTADO)';
-            opt.style.color = '#a0a0a0'; 
-        }
-        
-        opt.textContent = textoOpcion; 
+        opt.value = opcion.id; 
+        opt.textContent = opcion.texto; 
         select.appendChild(opt);
     });
     
-    mostrarCupoSeleccionado(); 
+    actualizarCupo();
 }
+
 /* ACTUALIZAR CUPO */
 async function actualizarCupo() {
     const cupoDiv = document.getElementById('cupoDiv');
     
     cupoDiv.textContent = 'Buscando disponibilidad...';
-    cupoDiv.classList.add('buscando'); 
+    cupoDiv.classList.add('buscando'); 
     
     try {
-        const response = await fetch(EXEC_URL + '?accion=consultarCupo'); 
+        const response = await fetch(EXEC_URL + '?accion=consultarCupo'); 
         const data = await response.json();
         
-        cupoDiv.classList.remove('buscando'); 
+        cupoDiv.classList.remove('buscando'); 
 
         if (data.status === 'OK' && data.cupos) {
-            todosLosCupos = data.cupos; 
+            todosLosCupos = data.cupos; 
+            mostrarCupoSeleccionado(); 
         } else {
-            // Error de datos
-            cupoDiv.textContent = '⚠️ Error en los datos del evento. Intenta recargar la página.';
+            cupoDiv.textContent = 'Error al verificar cupo.';
         }
     } catch(err) {
         console.error('Error al consultar cupo:', err);
         cupoDiv.classList.remove('buscando');
-        // Error de red
-        cupoDiv.textContent = '❌ No se pudo conectar con el servidor. Verifica tu internet.';
+        cupoDiv.textContent = 'Error de conexión.';
     }
 }
 
-/* MOSTRAR CUPO SELECCIONADO (CON LÓGICA AGOTADO) */
+/* MOSTRAR CUPO SELECCIONADO */
 function mostrarCupoSeleccionado() {
     const selectFecha = document.getElementById('fecha');
     const idSeleccionado = selectFecha.value;
     const cupoDiv = document.getElementById('cupoDiv');
     
-    cupoDiv.style.color = 'initial'; 
-    
     if (todosLosCupos.hasOwnProperty(idSeleccionado)) {
         const cupoRestante = todosLosCupos[idSeleccionado];
-        
-        if (cupoRestante <= 0) {
-            // ✅ AGOTADO: Mensaje en rojo y botón deshabilitado
-            cupoDiv.textContent = '¡ENTRADAS AGOTADAS! 😭'; // Mensaje final acordado
-            cupoDiv.style.color = '#d32f2f'; // Rojo fuerte
-            document.getElementById('btnReservar').disabled = true; 
-        } else {
-            // Disponible
-            cupoDiv.textContent = 'Entradas disponibles: ' + cupoRestante;
-            document.getElementById('btnReservar').disabled = false;
-        }
+        cupoDiv.textContent = 'Entradas disponibles: ' + cupoRestante;
     } else {
         cupoDiv.textContent = 'Selecciona una función para ver disponibilidad.';
-        document.getElementById('btnReservar').disabled = true; 
     }
 }
 
 
 /* BOTON RESERVA */
 document.getElementById('btnReservar').onclick = async function() {
-    mostrarMensaje(''); 
+    // 🛑 FIX: Limpiar mensaje anterior al iniciar el proceso
+    mostrarMensaje(''); 
 
     const nombre = document.getElementById('nombre').value.trim();
-    const telefonoCliente = document.getElementById('telefono').value.trim().replace(/\D/g,''); 
+    const telefonoCliente = document.getElementById('telefono').value.trim().replace(/\D/g,''); 
     const cantidad = parseInt(document.getElementById('cantidad').value);
-    const fecha = document.getElementById('fecha').value; 
+    const fecha = document.getElementById('fecha').value; 
 
     if (!nombre || !telefonoCliente || !cantidad || !fecha) {
         mostrarMensaje('💡 Completa todos los campos.', 'error');
@@ -259,7 +245,7 @@ document.getElementById('btnReservar').onclick = async function() {
     const apellidoBot = document.getElementById('apellidoBot').value.trim();
     if (apellidoBot.length > 0) {
         mostrarMensaje('❌ Error de validación de formulario.', 'error');
-        return; 
+        return; 
     }
 
     const formData = new URLSearchParams();
@@ -267,31 +253,31 @@ document.getElementById('btnReservar').onclick = async function() {
     formData.append('nombre', nombre);
     formData.append('telefono', telefonoCliente);
     formData.append('cantidad', cantidad);
-    formData.append('fecha', fecha); 
+    formData.append('fecha', fecha); 
 
     this.disabled = true;
     this.classList.add('loading');
-    clearInterval(timerTimeout); 
+    clearInterval(timerTimeout); 
 
     try {
-        const response = await fetch(EXEC_URL, { method: 'POST', body: formData }); 
+        const response = await fetch(EXEC_URL, { method: 'POST', body: formData }); 
         const data = await response.json();
 
         if (data.status === 'OK') {
             mostrarMensaje(`✅ ¡RESERVA EXITOSA! ID: ${data.id}. Total a pagar: $${data.montoTotal}. Redirigiendo a WhatsApp...`, 'exito');
             
-            // Construcción del Mensaje de WhatsApp 
+            // Construcción del Mensaje de WhatsApp 
             const mensajeWhatsApp = [
                 `¡Hola! Mi reserva es la ID: *${data.id}*.`,
                 `Confirmo la reserva de *${cantidad}* entradas.`,
-                `Mi teléfono (Cliente) es: *${telefonoCliente}*`, 
+                `Mi teléfono (Cliente) es: *${telefonoCliente}*`, 
                 `El monto total es de *$${data.montoTotal}*.`,
                 ``,
                 `⭐ *LINK DE PAGO MERCADO PAGO:*`,
-                `${data.linkPago}`, 
+                `${data.linkPago}`, 
                 ``,
                 `*IMPORTANTE:* Si el pago no se realiza en 5 minutos, la reserva puede cancelarse.`
-            ].join('\n'); 
+            ].join('\n'); 
 
             const mensajeURL = encodeURIComponent(mensajeWhatsApp);
             
@@ -303,13 +289,13 @@ document.getElementById('btnReservar').onclick = async function() {
         } else {
             // Error: El mensaje se queda fijo
             mostrarMensaje('❌ ' + data.message, 'error');
-            startTimer(); 
+            startTimer(); 
         }
         
     } catch(err) {
         // Error: El mensaje se queda fijo
         mostrarMensaje('❌ Error de conexión o red: ' + err.message, 'error');
-        startTimer(); 
+        startTimer(); 
     }
 
     this.disabled = false;
@@ -321,22 +307,17 @@ document.getElementById('fecha').addEventListener('change', mostrarCupoSeleccion
 
 
 // *** 4. INICIAR LAS FUNCIONES AL CARGAR ***
-cargarNombreObra(); 
-startTimer(); 
-actualizarCupoInicial();
-
-
-async function actualizarCupoInicial() {
-    await actualizarCupo(); 
-    
-    fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTRO_NOMBRE))
-        .then(response => response.json())
-        .then(data => cargarOpcionesEventos(data))
-        .catch(err => {
-            console.error('Error FATAL al cargar eventos (EXEC_URL incorrecta?):', err);
-            document.getElementById('cupoDiv').textContent = 'Error crítico al cargar eventos. Verifique la URL de Apps Script.';
-        });
-}
+cargarNombreObra(); 
+startTimer(); 
+fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTRO_NOMBRE))
+    .then(response => response.json())
+    .then(data => cargarOpcionesEventos(data))
+    .catch(err => {
+        console.error('Error FATAL al cargar eventos (EXEC_URL incorrecta?):', err);
+        document.getElementById('cupoDiv').textContent = 'Error crítico al cargar eventos. Verifique la URL de Apps Script.';
+    });
 </script>
 </body>
 </html>
+
+
