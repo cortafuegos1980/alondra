@@ -35,29 +35,30 @@
         font-weight: bold;
     }
 /* Nuevo estilo para el cuadro de precio (VERSIÓN DELICADA Y COMPACTA) */
+/* Estilo Final: Compacto y Delicado */
 .precio-caja {
     text-align: center;
     /* Margen más pequeño */
-    margin: 15px auto 10px; 
-    /* Relleno interno compacto */
-    padding: 8px 15px; 
-    max-width: 250px;
-    /* Estilo sutil */
+    margin: 10px auto 10px; 
+    /* ✅ Relleno interno muy reducido */
+    padding: 5px 10px; 
+    /* ✅ ANCHO MÁXIMO MUCHO MÁS PEQUEÑO */
+    max-width: 180px; 
+    
     border: 1px solid #ddd; 
     border-radius: 6px;
     background-color: #f9f9f9; 
-    font-size: 1em;
+    font-size: 0.9em; /* Fuente base un poco más pequeña */
     color: #555; 
     font-weight: 600; 
 }
 
 .precio-monto {
-    /* Tamaño moderado */
-    font-size: 1.4em; 
-    /* Color neutro */
+    /* ✅ Tamaño del monto más pequeño */
+    font-size: 1.2em; 
     color: #000; 
     display: block;
-    margin-top: 5px;
+    margin-top: 3px; /* Espaciado más pequeño */
     font-weight: bold;
 }
     
@@ -411,6 +412,7 @@ fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTR
 </script>
 </body>
 </html>
+
 
 
 
