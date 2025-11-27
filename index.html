@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cargando Obra...</title>
 <style>
-    /* *** ESTILOS CSS REVISADOS *** */
     body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
     .container { 
         max-width: 400px; 
@@ -54,9 +53,8 @@
         padding: 10px;
         border-radius: 5px;
     }
-    /* HONEYPOT (Esto hace que el campo anti-bot sea invisible) */
     .honeypot {
-        display: none !important;	/* ¡Aseguramos que no se vea! */
+        display: none !important;	
         visibility: hidden;
         height: 0;
         width: 0;
@@ -98,16 +96,18 @@
         </select>
     </div>
 
-        <div class="form-group honeypot">
+    <div class="form-group honeypot">
         <label for="apellidoBot">No llenar este campo:</label>
         <input type="text" id="apellidoBot" name="apellidoBot">
     </div>
 
     <button id="btnReservar">Reservar</button>
-</div> <script>
+</div> 
+
+<script>
 // *** 1. CONFIGURACIÓN CRUCIAL ***
 // 💡 1. REVISA TU URL DE APPS SCRIPT.
-    const EXEC_URL = 'https://script.google.com/macros/s/AKfycbyCoBk8cOyzJZEHESWk5nAuio3LDCAe9fCzi-lK6kR0XQl9dtUGDD7kVNWt7Ipdqec9/exec';
+const EXEC_URL = 'https://script.google.com/macros/s/AKfycbyCoBk8cOyzJZEHESWk5nAuio3LDCAe9fCzi-lK6kR0XQl9dtUGDD7kVNWt7Ipdqec9/exec';
 
 // Filtro de la obra
 const OBRA_FILTRO_NOMBRE = 'La Jirafa'; 
@@ -231,7 +231,7 @@ function mostrarCupoSeleccionado() {
 
             if (cupo === 0) {
                 opt.textContent = opt.textContent.split(" (")[0] + " (Agotado)";
-                opt.style.color = "#b5b5b5"; // gris claro
+                opt.style.color = "#b5b5b5"; 
             } else {
                 opt.textContent = opt.textContent.split(" (")[0];
                 opt.style.color = "black";
@@ -338,7 +338,6 @@ fetch(EXEC_URL + '?accion=obtenerConfigInicial&obra=' + encodeURIComponent(OBRA_
             cargarOpcionesEventos(data.opciones); 
 
         } else {
-            // Maneja el error de forma clara
             throw new Error(data.message || 'Error al procesar los datos del servidor. (Verifique el despliegue)');
         }
     })
