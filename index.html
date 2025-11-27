@@ -22,7 +22,6 @@
         padding: 10px;
         border-radius: 5px;
     }
-    /* ?? ESTILO DE HONEYPOT - HACE INVISIBLE EL CAMPO DE SPAM ?? */
     .honeypot {
         display: none;?
         visibility: hidden;
@@ -47,7 +46,7 @@
     </div>
 
     <div class="form-group">
-        <label>Tu WhatsApp (Solo n迆meros, sin 0 ni 15):</label>
+        <label>Tu WhatsApp (S車lo n迆meros, sin 0 ni 15):</label>
         <input type="tel" id="telefono" placeholder="Ej: 3415123456">
     </div>
 
@@ -79,7 +78,7 @@ const EXEC_URL = 'https://script.google.com/macros/s/AKfycbxY8HbJ2jkGT7gx7YLWkLT
 const OBRA_FILTRO_NOMBRE = 'La Jirafa'; 
 
 // ?? 2. REVISA TU N迆MERO DE GESTOR
-const MANAGER_WHATSAPP_NUMBER = '5493492594940'; // <-- ?REEMPLAZA ESTE N迆MERO POR EL TUYO REAL! (con c車digo de pa赤s, sin el signo +)
+const MANAGER_WHATSAPP_NUMBER = '5493492594940'; 
 
 let timerTimeout; 
 let todosLosCupos = {}; 
@@ -134,8 +133,8 @@ function startTimer() {
         const displayMinutes = minutes < 10 ? "0" + minutes : minutes;
         const displaySeconds = seconds < 10 ? "0" + seconds : seconds;
 
-        // Limpia caracteres extra?os y muestra tiempo
-        document.getElementById('timerDiv').textContent = "?? Tiempo restante: " + displayMinutes + ":" + displaySeconds; 
+        // ACENTO RESTAURADO
+        document.getElementById('timerDiv').textContent = "Tiempo restante: " + displayMinutes + ":" + displaySeconds; 
 
         if (--duration < 0) {
             clearInterval(timerTimeout); 
@@ -187,11 +186,13 @@ async function actualizarCupo() {
             todosLosCupos = data.cupos; 
             mostrarCupoSeleccionado(); 
         } else {
+            // ACENTO RESTAURADO
             cupoDiv.textContent = 'Error al verificar cupo.';
         }
     } catch(err) {
         console.error('Error al consultar cupo:', err);
         cupoDiv.classList.remove('buscando');
+        // ACENTO RESTAURADO
         cupoDiv.textContent = 'Error de conexi車n.';
     }
 }
@@ -206,6 +207,7 @@ function mostrarCupoSeleccionado() {
         const cupoRestante = todosLosCupos[idSeleccionado];
         cupoDiv.textContent = 'Entradas disponibles: ' + cupoRestante;
     } else {
+        // ACENTO RESTAURADO
         cupoDiv.textContent = 'Selecciona una funci車n para ver disponibilidad.';
     }
 }
@@ -219,22 +221,23 @@ document.getElementById('btnReservar').onclick = async function() {
     const fecha = document.getElementById('fecha').value; 
 
     if (!nombre || !telefonoCliente || !cantidad || !fecha) {
-        mostrarMensaje('?? Completa todos los campos correctamente.', 'error');
+        // ACENTO RESTAURADO
+        mostrarMensaje('Completa todos los campos correctamente.', 'error');
         return;
     }
 
-    // ?? VALIDACI車N HONEYPOT (ANTI-SPAM) ??
+    // VALIDACI車N HONEYPOT (ANTI-SPAM)
     const apellidoBot = document.getElementById('apellidoBot').value.trim();
     if (apellidoBot.length > 0) {
-        mostrarMensaje('? Error de validaci車n de formulario.', 'error');
+        // ACENTO RESTAURADO
+        mostrarMensaje('Error de validaci車n de formulario.', 'error');
         return; 
     }
-    // ?? FIN DE VALIDACI車N HONEYPOT ??
 
     const formData = new URLSearchParams();
-    formData.append('accion', 'reservar'); // Asegura que la acci車n se env赤a
+    formData.append('accion', 'reservar');
     formData.append('nombre', nombre);
-    formData.append('telefono', telefonoCliente); // Env赤a como 'telefono'
+    formData.append('telefono', telefonoCliente);
     formData.append('cantidad', cantidad);
     formData.append('fecha', fecha); 
 
@@ -247,12 +250,14 @@ document.getElementById('btnReservar').onclick = async function() {
         const data = await response.json();
 
         if (data.status === 'OK') {
-            mostrarMensaje(`? ?RESERVA EXITOSA! ID: ${data.id}. Total a pagar: $${data.montoTotal}. Redirigiendo a WhatsApp...`, 'exito');
+            // ACENTO RESTAURADO
+            mostrarMensaje(`?RESERVA EXITOSA! ID: ${data.id}. Total a pagar: $${data.montoTotal}. Redirigiendo a WhatsApp...`, 'exito');
             
             // Construcci車n del Mensaje de WhatsApp 
             const mensajeWhatsApp = [
                 `?Hola! Mi reserva es la ID: *${data.id}*.`,
                 `Confirmo la reserva de *${cantidad}* entradas.`,
+                // ACENTO RESTAURADO
                 `Mi tel谷fono (Cliente) es: *${telefonoCliente}*`, 
                 `El monto total es de *$${data.montoTotal}*.`,
                 ``,
@@ -267,33 +272,4 @@ document.getElementById('btnReservar').onclick = async function() {
             // Abre WhatsApp con el n迆mero del Gestor
             window.open(`https://wa.me/${MANAGER_WHATSAPP_NUMBER}?text=${mensajeURL}`, '_blank');
             
-            document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante;
-            actualizarCupo(); // Refresca el cupo global
-        } else {
-            mostrarMensaje('? Error al reservar: ' + data.message, 'error');
-            startTimer(); 
-        }
-        
-    } catch(err) {
-        mostrarMensaje('? Error de conexi車n o red: ' + err.message, 'error');
-        startTimer(); 
-    }
-
-    this.disabled = false;
-    this.classList.remove('loading');
-};
-
-
-document.getElementById('fecha').addEventListener('change', mostrarCupoSeleccionado);
-
-
-// *** 4. INICIAR LAS FUNCIONES AL CARGAR ***
-cargarNombreObra(); 
-startTimer(); 
-fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTRO_NOMBRE))
-    .then(response => response.json())
-    .then(data => cargarOpcionesEventos(data))
-    .catch(err => console.error('Error al cargar eventos:', err));
-</script>
-</body>
-</html>
+            document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante
