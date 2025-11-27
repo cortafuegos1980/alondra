@@ -288,7 +288,7 @@ document.getElementById('btnReservar').onclick = async function() {
             actualizarCupo();
         } else {
             // Error: El mensaje se queda fijo
-            mostrarMensaje('❌ Error al reservar: ' + data.message, 'error');
+            mostrarMensaje('❌ ' + data.message, 'error');
             startTimer(); 
         }
         
@@ -319,3 +319,4 @@ fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTR
 </script>
 </body>
 </html>
+
