@@ -16,20 +16,20 @@
     .message { padding: 10px; border-radius: 5px; margin-bottom: 15px; display: none; }
     .cupo { margin-bottom: 15px; font-weight: bold; }
     .buscando {	
-        background: #e6ffe6; 
+        background: #e6ffe6;?
         color: #155724;	
         border: 1px solid #c3e6cb;
         padding: 10px;
         border-radius: 5px;
     }
-    /* 馃洃 ESTILO DE HONEYPOT - HACE INVISIBLE EL CAMPO DE SPAM 馃洃 */
+    /* ?? ESTILO DE HONEYPOT - HACE INVISIBLE EL CAMPO DE SPAM ?? */
     .honeypot {
-        display: none; 
+        display: none;?
         visibility: hidden;
         height: 0;
         width: 0;
         position: absolute;
-        left: -9999px; 
+        left: -9999px;?
     }
 </style>
 </head>
@@ -47,7 +47,7 @@
     </div>
 
     <div class="form-group">
-        <label>Tu WhatsApp (S贸lo n煤meros, sin 0 ni 15):</label>
+        <label>Tu WhatsApp (Solo números, sin 0 ni 15):</label>
         <input type="tel" id="telefono" placeholder="Ej: 3415123456">
     </div>
 
@@ -59,7 +59,7 @@
     <div class="form-group">
         <label>Fecha del Evento:</label>
         <select id="fecha">
-            </select>
+        </select>
     </div>
 
     <div class="form-group honeypot">
@@ -71,20 +71,20 @@
 </div>
 
 <script>
-// *** 1. CONFIGURACI脫N 脷NICA ***
-// 鈿狅笍 1. REVISA TU URL DE APPS SCRIPT
+// *** 1. CONFIGURACIóN úNICA ***
+// ?? 1. REVISA TU URL DE APPS SCRIPT
 const EXEC_URL = 'https://script.google.com/macros/s/AKfycbxY8HbJ2jkGT7gx7YLWkLTL_h-YGRA9uBefYlDI4MU7RH4A2VM5AYMVD5y2KCZgnO4T/exec';
 
 // Filtro de la obra
 const OBRA_FILTRO_NOMBRE = 'La Jirafa'; 
 
-// 鈿狅笍 2. REVISA TU N脷MERO DE GESTOR
-const MANAGER_WHATSAPP_NUMBER = '5493492594940'; // <-- 隆REEMPLAZA ESTE N脷MERO POR EL TUYO REAL! (con c贸digo de pa铆s, sin el signo +)
+// ?? 2. REVISA TU NúMERO DE GESTOR
+const MANAGER_WHATSAPP_NUMBER = '5493492594940'; // <-- ?REEMPLAZA ESTE NúMERO POR EL TUYO REAL! (con código de país, sin el signo +)
 
 let timerTimeout; 
 let todosLosCupos = {}; 
 
-/* Funci贸n para mostrar mensajes de estado */
+/* Función para mostrar mensajes de estado */
 function mostrarMensaje(texto, tipo = 'error') {
     const messageDiv = document.getElementById('message');
     messageDiv.textContent = texto;
@@ -134,7 +134,8 @@ function startTimer() {
         const displayMinutes = minutes < 10 ? "0" + minutes : minutes;
         const displaySeconds = seconds < 10 ? "0" + seconds : seconds;
 
-        document.getElementById('timerDiv').textContent = "鈴憋笍 Tiempo restante: " + displayMinutes + ":" + displaySeconds;
+        // Limpia caracteres extra?os y muestra tiempo
+        document.getElementById('timerDiv').textContent = "?? Tiempo restante: " + displayMinutes + ":" + displaySeconds; 
 
         if (--duration < 0) {
             clearInterval(timerTimeout); 
@@ -191,7 +192,7 @@ async function actualizarCupo() {
     } catch(err) {
         console.error('Error al consultar cupo:', err);
         cupoDiv.classList.remove('buscando');
-        cupoDiv.textContent = 'Error de conexi贸n.';
+        cupoDiv.textContent = 'Error de conexión.';
     }
 }
 
@@ -205,7 +206,7 @@ function mostrarCupoSeleccionado() {
         const cupoRestante = todosLosCupos[idSeleccionado];
         cupoDiv.textContent = 'Entradas disponibles: ' + cupoRestante;
     } else {
-        cupoDiv.textContent = 'Selecciona una funci贸n para ver disponibilidad.';
+        cupoDiv.textContent = 'Selecciona una función para ver disponibilidad.';
     }
 }
 
@@ -218,21 +219,22 @@ document.getElementById('btnReservar').onclick = async function() {
     const fecha = document.getElementById('fecha').value; 
 
     if (!nombre || !telefonoCliente || !cantidad || !fecha) {
-        mostrarMensaje('鈿狅笍 Completa todos los campos correctamente.', 'error');
+        mostrarMensaje('?? Completa todos los campos correctamente.', 'error');
         return;
     }
 
-    // 馃洃 VALIDACI脫N HONEYPOT (ANTI-SPAM) 馃洃
+    // ?? VALIDACIóN HONEYPOT (ANTI-SPAM) ??
     const apellidoBot = document.getElementById('apellidoBot').value.trim();
     if (apellidoBot.length > 0) {
-        mostrarMensaje('馃毇 Error de validaci贸n de formulario.', 'error');
+        mostrarMensaje('? Error de validación de formulario.', 'error');
         return; 
     }
-    // 馃洃 FIN DE VALIDACI脫N HONEYPOT 馃洃
+    // ?? FIN DE VALIDACIóN HONEYPOT ??
 
     const formData = new URLSearchParams();
+    formData.append('accion', 'reservar'); // Asegura que la acción se envía
     formData.append('nombre', nombre);
-    formData.append('telefonoCliente', telefonoCliente); 
+    formData.append('telefono', telefonoCliente); // Envía como 'telefono'
     formData.append('cantidad', cantidad);
     formData.append('fecha', fecha); 
 
@@ -245,16 +247,16 @@ document.getElementById('btnReservar').onclick = async function() {
         const data = await response.json();
 
         if (data.status === 'OK') {
-            mostrarMensaje(`鉁?隆RESERVA EXITOSA! ID: ${data.id}. Total a pagar: $${data.montoTotal}. Redirigiendo a WhatsApp...`, 'exito');
+            mostrarMensaje(`? ?RESERVA EXITOSA! ID: ${data.id}. Total a pagar: $${data.montoTotal}. Redirigiendo a WhatsApp...`, 'exito');
             
-            // Construcci贸n del Mensaje de WhatsApp 
+            // Construcción del Mensaje de WhatsApp 
             const mensajeWhatsApp = [
-                `隆Hola! Mi reserva es la ID: *${data.id}*.`,
+                `?Hola! Mi reserva es la ID: *${data.id}*.`,
                 `Confirmo la reserva de *${cantidad}* entradas.`,
-                `Mi tel茅fono (Cliente) es: *${telefonoCliente}*`, 
+                `Mi teléfono (Cliente) es: *${telefonoCliente}*`, 
                 `El monto total es de *$${data.montoTotal}*.`,
                 ``,
-                `鉃★笍 *LINK DE PAGO MERCADO PAGO:*`,
+                `? *LINK DE PAGO MERCADO PAGO:*`,
                 `${data.linkPago}`, 
                 ``,
                 `*IMPORTANTE:* Si el pago no se realiza en 5 minutos, la reserva puede cancelarse.`
@@ -262,17 +264,18 @@ document.getElementById('btnReservar').onclick = async function() {
 
             const mensajeURL = encodeURIComponent(mensajeWhatsApp);
             
-            // Abre WhatsApp con el n煤mero del Gestor
+            // Abre WhatsApp con el número del Gestor
             window.open(`https://wa.me/${MANAGER_WHATSAPP_NUMBER}?text=${mensajeURL}`, '_blank');
             
             document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante;
+            actualizarCupo(); // Refresca el cupo global
         } else {
-            mostrarMensaje('鉂?Error al reservar: ' + data.message, 'error');
+            mostrarMensaje('? Error al reservar: ' + data.message, 'error');
             startTimer(); 
         }
         
     } catch(err) {
-        mostrarMensaje('鉂?Error de conexi贸n o red: ' + err.message, 'error');
+        mostrarMensaje('? Error de conexión o red: ' + err.message, 'error');
         startTimer(); 
     }
 
