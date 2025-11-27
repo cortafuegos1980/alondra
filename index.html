@@ -227,7 +227,7 @@ function mostrarCupoSeleccionado() {
     const selectFecha = document.getElementById('fecha');
     const idSeleccionado = selectFecha.value;
     const cupoDiv = document.getElementById('cupoDiv');
-    const btnReservar = document.getElementById('btnReservar'); 
+    const btnReservar = document.getElementById('btnReservar'); // Aseguramos que tomamos el botón
 
     // Limpiamos el color en línea por si acaso
     cupoDiv.style.color = 'initial'; 
@@ -239,7 +239,9 @@ function mostrarCupoSeleccionado() {
             // ✅ AGOTADO: Mensaje en rojo y botón deshabilitado
             cupoDiv.textContent = '¡ENTRADAS AGOTADAS! 😭';
             cupoDiv.style.color = '#d32f2f'; // Rojo fuerte
-            btnReservar.disabled = true; // <-- ESTA ES LA ÚNICA DESHABILITACIÓN
+            
+            // 🛑 LÍNEA CLAVE QUE DESHABILITA EL BOTÓN
+            btnReservar.disabled = true; 
         } else {
             // Disponible
             cupoDiv.textContent = 'Entradas disponibles: ' + cupoRestante;
@@ -355,6 +357,7 @@ async function actualizarCupoInicial() {
 </script>
 </body>
 </html>
+
 
 
 
