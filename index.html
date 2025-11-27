@@ -167,32 +167,36 @@ function startTimer() {
 /* CARGAR OPCIONES DEL EVENTO */
 function cargarOpcionesEventos(opciones) {
     const select = document.getElementById('fecha');
-    select.innerHTML = ''; 
-    
+    select.innerHTML = '';
+
     if (opciones.length === 0) {
         const opt = document.createElement('option');
         opt.textContent = "No hay eventos disponibles";
         select.appendChild(opt);
-        document.getElementById('cupoDiv').textContent = 'No hay eventos configurados para ' + OBRA_FILTRO_NOMBRE + '.';
+        document.getElementById('cupoDiv').textContent =
+            'No hay eventos configurados para ' + OBRA_FILTRO_NOMBRE + '.';
         return;
     }
 
     opciones.forEach(opcion => {
-    const opt = document.createElement('option');
-    opt.value = opcion.id;
+        const opt = document.createElement('option');
+        opt.value = opcion.id;
 
-    const cupo = todosLosCupos[opcion.id];
+        const cupo = todosLosCupos[opcion.id];
 
-    if (cupo === 0) {
-        opt.textContent = opcion.texto + " (Agotado)";
-        opt.style.color = "#b5b5b5";  // gris claro
-    } else {
-        opt.textContent = opcion.texto;
-        opt.style.color = "black";
-    }
+        if (cupo === 0) {
+            opt.textContent = opcion.texto + " (Agotado)";
+            opt.style.color = "#b5b5b5"; // gris claro
+        } else {
+            opt.textContent = opcion.texto;
+            opt.style.color = "black";
+        }
 
-    select.appendChild(opt);
-});
+        select.appendChild(opt);
+    });
+
+    actualizarCupo();
+}
 
 
 /* ACTUALIZAR CUPO */
@@ -341,6 +345,7 @@ fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTR
 </script>
 </body>
 </html>
+
 
 
 
