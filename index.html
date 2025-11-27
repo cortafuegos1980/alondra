@@ -37,23 +37,25 @@
 /* Nuevo estilo para el cuadro de precio */
 .precio-caja {
     text-align: center;
-    margin: 20px auto 10px; /* Margen superior e inferior */
-    padding: 10px 15px; /* Relleno interno */
-    max-width: 250px; /* Ancho máximo para que no ocupe toda la pantalla */
-    border: 2px solid #4CAF50; /* Borde verde para destacar */
-    border-radius: 8px; /* Bordes redondeados */
-    background-color: #e8f5e9; /* Fondo verde muy claro */
-    font-size: 1.1em;
-    color: #333;
-    font-weight: bold;
+    margin: 20px auto 10px;
+    padding: 10px 15px;
+    max-width: 250px;
+    /* ✅ Borde fino y gris claro para sutileza */
+    border: 1px solid #ddd; 
+    border-radius: 6px;
+    /* ✅ Fondo casi blanco */
+    background-color: #f9f9f9; 
+    font-size: 1em;
+    color: #555; /* Texto principal gris oscuro */
+    font-weight: 600; 
 }
 
 .precio-monto {
-    font-size: 1.5em; /* ✅ REDUCIDO: Ahora es un poco más pequeño */
-    color: #00796b; 
+    font-size: 1.4em; /* Tamaño grande, pero no demasiado */
+    color: #000; /* ✅ Precio en negro para sobriedad */
     display: block;
     margin-top: 5px;
-}
+    font-weight: bold;
 }
     
 </style>
@@ -409,6 +411,7 @@ fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTR
 </script>
 </body>
 </html>
+
 
 
 
