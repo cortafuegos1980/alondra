@@ -1,32 +1,106 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cargando Obra...</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva de Entradas</title>
 
-<style>
-    body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
-    .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    <style>
+        body {
+            font-family: Arial;
+            margin: 20px;
+        }
 
-    .timer { background: #ffebee; color: #d32f2f; padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; margin-bottom: 15px; }
+        h2 {
+            margin-bottom: 10px;
+        }
 
-    .form-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 5px; font-weight: bold; }
-    input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        /* 🔹 Select normal */
+        #funcionesSelect option {
+            padding: 6px;
+        }
 
-    button { width: 100%; padding: 15px; background: #25D366; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
-    button.loading { background: #cccccc; cursor: not-allowed; }
+        /* 🔹 Opción agotada */
+        .agotada {
+            color: #8b8b8b !important;
+            background-color: #f0f0f0 !important;
+        }
 
-    .message { padding: 10px; border-radius: 5px; margin-bottom: 15px; display: none; }
-    .cupo { margin-bottom: 15px; font-weight: bold; }
+        /* 🔹 Mensaje (éxito o error) */
+        #message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
 
-    .buscando {
-        background: #e6ffe6;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-        padding: 10px;
-        border-radius: 5px;
-    }
+    <h2>Reserva tu entrada</h2>
 
-    /* 🔥 ESTILO DEL MENSAJE "AGOTADO" */
+    <label for="funcionesSelect">Funciones disponibles:</label>
+    <select id="funcionesSelect"></select>
+
+    <div id="message"></div>
+
+    <script>
+        /* ==========================================
+           CARGAR FUNCIONES DESDE API
+        ========================================== */
+        async function cargarFunciones() {
+            const select = document.getElementById("funcionesSelect");
+
+            try {
+                const res = await fetch("https://script.google.com/macros/s/AKfycbzME6WFFUOpqw72OFNkKZe4ZKrmxEVbWTQ7GG9bpgLwtzaUN-lDfRkVm8qrSoiHVAhp/exec?action=getFunciones");
+                const funciones = await res.json();
+
+                funciones.forEach(f => {
+                    let texto = `${f.fecha} - ${f.hora} hs ($${f.precio})`;
+
+                    const option = document.createElement("option");
+                    option.value = f.id;
+
+                    if (f.disponible === "no") {
+                        option.textContent = texto + " (Agotado)";
+                        option.classList.add("agotada");
+                        option.disabled = true;
+                    } else {
+                        option.textContent = texto;
+                    }
+
+                    select.appendChild(option);
+                });
+
+            } catch (e) {
+                mostrarMensaje("No se pudieron cargar las funciones.", "error");
+            }
+        }
+
+        /* ==========================================
+           MOSTRAR MENSAJE
+        ========================================== */
+        function mostrarMensaje(texto, tipo) {
+            const div = document.getElementById("message");
+            div.textContent = texto;
+            div.style.display = "block";
+
+            if (tipo === "success") {
+                div.style.backgroundColor = "#d4edda";
+                div.style.color = "#155724";
+
+                setTimeout(() => div.style.display = "none", 4000);
+
+            } else {
+                div.style.backgroundColor = "#f8d7da";
+                div.style.color = "#721c24";
+            }
+        }
+
+        // 🔹 Inicializar
+        cargarFunciones();
+    </script>
+
+</body>
+</html>
