@@ -110,7 +110,7 @@ function mostrarMensaje(texto, tipo = 'error') {
         messageDiv.style.backgroundColor = '#f8d7da'; 
         messageDiv.style.color = '#721c24'; 
         
-        // 🛑 FIX: Mensaje de ERROR PERMANECE visible (NO se usa setTimeout)
+        // Mensaje de ERROR PERMANECE visible (FIX anterior)
     }
 }
 
@@ -172,17 +172,27 @@ function cargarOpcionesEventos(opciones) {
         opt.textContent = "No hay eventos disponibles";
         select.appendChild(opt);
         document.getElementById('cupoDiv').textContent = 'No hay eventos configurados para ' + OBRA_FILTRO_NOMBRE + '.';
+        document.getElementById('btnReservar').disabled = true;
         return;
     }
 
     opciones.forEach(opcion => {
         const opt = document.createElement('option');
         opt.value = opcion.id; 
-        opt.textContent = opcion.texto; 
+        
+        let textoOpcion = opcion.texto;
+        // 💡 FIX: Añadir (AGOTADO) si el cupo es 0 o menos
+        if (todosLosCupos.hasOwnProperty(opcion.id) && todosLosCupos[opcion.id] <= 0) {
+            textoOpcion += ' (AGOTADO)';
+            opt.disabled = true; // Deshabilita la opción para que no se pueda seleccionar
+        }
+        
+        opt.textContent = textoOpcion; 
         select.appendChild(opt);
     });
     
-    actualizarCupo();
+    // Llamamos para mostrar el cupo visible y el estado del botón
+    mostrarCupoSeleccionado(); 
 }
 
 /* ACTUALIZAR CUPO */
@@ -200,7 +210,7 @@ async function actualizarCupo() {
 
         if (data.status === 'OK' && data.cupos) {
             todosLosCupos = data.cupos; 
-            mostrarCupoSeleccionado(); 
+            // NO llamamos a mostrarCupoSeleccionado aquí, lo llama cargarOpcionesEventos
         } else {
             cupoDiv.textContent = 'Error al verificar cupo.';
         }
@@ -216,12 +226,28 @@ function mostrarCupoSeleccionado() {
     const selectFecha = document.getElementById('fecha');
     const idSeleccionado = selectFecha.value;
     const cupoDiv = document.getElementById('cupoDiv');
+    const btnReservar = document.getElementById('btnReservar'); 
+
+    // Limpiamos el color en línea por si acaso
+    cupoDiv.style.color = 'initial'; 
     
     if (todosLosCupos.hasOwnProperty(idSeleccionado)) {
         const cupoRestante = todosLosCupos[idSeleccionado];
-        cupoDiv.textContent = 'Entradas disponibles: ' + cupoRestante;
+        
+        if (cupoRestante <= 0) {
+            // 💡 FIX: AGOTADAS: Texto en rojo y botón deshabilitado
+            cupoDiv.textContent = '¡ENTRADAS AGOTADAS! 😭';
+            cupoDiv.style.color = '#d32f2f'; // Rojo fuerte
+            btnReservar.disabled = true;
+        } else {
+            // Disponible: Texto normal y botón habilitado
+            cupoDiv.textContent = 'Entradas disponibles: ' + cupoRestante;
+            btnReservar.disabled = false;
+        }
     } else {
+        // Ninguna selección
         cupoDiv.textContent = 'Selecciona una función para ver disponibilidad.';
+        btnReservar.disabled = true; // Deshabilita si no hay evento seleccionado
     }
 }
 
@@ -287,7 +313,7 @@ document.getElementById('btnReservar').onclick = async function() {
             document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante;
             actualizarCupo();
         } else {
-            // Error: El mensaje se queda fijo
+            // 💡 FIX: Mensaje de error simplificado
             mostrarMensaje('❌ ' + data.message, 'error');
             startTimer(); 
         }
@@ -309,14 +335,23 @@ document.getElementById('fecha').addEventListener('change', mostrarCupoSeleccion
 // *** 4. INICIAR LAS FUNCIONES AL CARGAR ***
 cargarNombreObra(); 
 startTimer(); 
-fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTRO_NOMBRE))
-    .then(response => response.json())
-    .then(data => cargarOpcionesEventos(data))
-    .catch(err => {
-        console.error('Error FATAL al cargar eventos (EXEC_URL incorrecta?):', err);
-        document.getElementById('cupoDiv').textContent = 'Error crítico al cargar eventos. Verifique la URL de Apps Script.';
-    });
+// 💡 FIX: Asegurar que el cupo se consulte antes de cargar las opciones
+actualizarCupoInicial();
+
+
+async function actualizarCupoInicial() {
+    // 1. Consultar cupo primero (actualizarCupo() pobla todosLosCupos)
+    await actualizarCupo(); 
+    
+    // 2. Cargar las opciones del desplegable usando el cupo cargado
+    fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTRO_NOMBRE))
+        .then(response => response.json())
+        .then(data => cargarOpcionesEventos(data))
+        .catch(err => {
+            console.error('Error FATAL al cargar eventos (EXEC_URL incorrecta?):', err);
+            document.getElementById('cupoDiv').textContent = 'Error crítico al cargar eventos. Verifique la URL de Apps Script.';
+        });
+}
 </script>
 </body>
 </html>
-
