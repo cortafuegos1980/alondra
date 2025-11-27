@@ -30,6 +30,10 @@
         position: absolute;
         left: -9999px;	
     }
+    .agotado-rojo {
+        color: #D32F2F; /* El mismo rojo intenso de tu temporizador */
+        font-weight: bold;
+    }
 </style>
 </head>
 <body>
@@ -227,37 +231,46 @@ async function actualizarCupo() {
 
 /* MOSTRAR CUPO SELECCIONADO */
 function mostrarCupoSeleccionado() {
-    const selectFecha = document.getElementById('fecha');
-    const idSeleccionado = selectFecha.value;
-    const cupoDiv = document.getElementById('cupoDiv');
+    const selectFecha = document.getElementById('fecha');
+    const idSeleccionado = selectFecha.value;
+    const cupoDiv = document.getElementById('cupoDiv');
 
-    // Actualiza texto del cupo
-    if (todosLosCupos.hasOwnProperty(idSeleccionado)) {
-        const cupoRestante = todosLosCupos[idSeleccionado];
+    // Esta línea es nueva: se asegura de que el indicador no esté en modo "buscando"
+    cupoDiv.classList.remove('buscando'); 
 
-        // Actualiza indicador superior
-        cupoDiv.textContent = (cupoRestante === 0)
-            ? '¡ENTRADAS AGOTADAS!'
-            : 'Entradas disponibles: ' + cupoRestante;
+    // Actualiza texto del cupo
+    if (todosLosCupos.hasOwnProperty(idSeleccionado)) {
+        const cupoRestante = todosLosCupos[idSeleccionado];
 
-        // Recorre todas las opciones y actualiza texto + color
-        const opciones = selectFecha.options;
-        for (let opt of opciones) {
-            const cupo = todosLosCupos[opt.value];
-
-            if (cupo === 0) {
-                opt.textContent = opt.textContent.split(" (")[0] + " (Agotado)";
-                opt.style.color = "#b5b5b5"; // gris claro
-            } else {
-                opt.textContent = opt.textContent.split(" (")[0];
-                opt.style.color = "black";
-            }
+        // ** LÓGICA DE TEXTO Y COLOR ROJO **
+        if (cupoRestante === 0) {
+            cupoDiv.textContent = '¡ENTRADAS AGOTADAS!';
+            // Aplicar el color rojo
+            cupoDiv.classList.add('agotado-rojo');
+        } else {
+            cupoDiv.textContent = 'Entradas disponibles: ' + cupoRestante;
+            // Quitar el color rojo si hay entradas
+            cupoDiv.classList.remove('agotado-rojo');
         }
-    } else {
-        cupoDiv.textContent = 'Selecciona una función para ver disponibilidad.';
-    }
-}
+        // ** FIN LÓGICA DE TEXTO Y COLOR ROJO **
 
+        // Recorre todas las opciones y actualiza texto + color
+        const opciones = selectFecha.options;
+        for (let opt of opciones) {
+            const cupo = todosLosCupos[opt.value];
+
+            if (cupo === 0) {
+                opt.textContent = opt.textContent.split(" (")[0] + " (Agotado)";
+                opt.style.color = "#b5b5b5"; // gris claro (se mantiene como estaba)
+            } else {
+                opt.textContent = opt.textContent.split(" (")[0];
+                opt.style.color = "black";
+            }
+        }
+    } else {
+        cupoDiv.textContent = 'Selecciona una función para ver disponibilidad.';
+    }
+}
 
 /* BOTON RESERVA */
 document.getElementById('btnReservar').onclick = async function() {
@@ -352,6 +365,7 @@ fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTR
 </script>
 </body>
 </html>
+
 
 
 
