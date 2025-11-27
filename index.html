@@ -225,7 +225,7 @@ document.getElementById('btnReservar').onclick = async function() {
 
     if (!nombre || !telefonoCliente || !cantidad || !fecha) {
         // FIX: EMOJI Y ACENTOS DIRECTOS EN JS
-        mostrarMensaje('💡 Completa todos los campos correctamente.', 'error');
+        mostrarMensaje('💡 Completa todos los campos.', 'error');
         return;
     }
 
@@ -309,3 +309,4 @@ fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTR
 </script>
 </body>
 </html>
+
