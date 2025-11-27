@@ -71,12 +71,10 @@
     </div>
 
     <button id="btnReservar">Reservar</button>
-</div>
-
-<script>
+</div> <script>
 // *** 1. CONFIGURACIÓN CRUCIAL ***
 // 💡 1. REVISA TU URL DE APPS SCRIPT.
-    const EXEC_URL = 'https://script.google.com/macros/s/AKfycbznmn09RZQb6o6-fh-VclrrE3Q2uRbxi-Nb3boBJN4qkAh8KZN9bH_sknGV30QmMubm/exec';
+    const EXEC_URL = 'https://script.google.com/macros/s/AKfycbyCoBk8cOyzJZEHESWk5nAuio3LDCAe9fCzi-lK6kR0XQl9dtUGDD7kVNWt7Ipdqec9/exec';
 
 // Filtro de la obra
 const OBRA_FILTRO_NOMBRE = 'La Jirafa'; 
@@ -115,7 +113,7 @@ function mostrarMensaje(texto, tipo = 'error') {
     }
 }
 
-/* CARGAR NOMBRE DE OBRA (Se reemplazará con la función de carga inicial) */
+/* CARGAR NOMBRE DE OBRA */
 function actualizarTituloObra(nombre) {
     const nuevoNombre = 'Reserva Entradas - ' + nombre;
     document.title = nuevoNombre;
@@ -167,7 +165,7 @@ function cargarOpcionesEventos(opciones) {
         select.appendChild(opt);
     });
 
-    mostrarCupoSeleccionado(); // Llama directamente ya que todosLosCupos ya está lleno
+    mostrarCupoSeleccionado(); 
 }
 
 
@@ -196,7 +194,6 @@ function mostrarCupoSeleccionado() {
         for (let opt of opciones) {
             const cupo = todosLosCupos[opt.value];
             
-            // Si el cupo es desconocido o no existe (ej: "No hay eventos disponibles") lo ignoramos.
             if (typeof cupo === 'undefined' || opt.value === "") continue; 
 
             if (cupo === 0) {
@@ -297,25 +294,24 @@ startTimer(); 
 fetch(EXEC_URL + '?accion=obtenerConfigInicial&obra=' + encodeURIComponent(OBRA_FILTRO_NOMBRE))
     .then(response => response.json())
     .then(data => {
-        if (data.status === 'OK') {
+        if (data.status === 'OK' && Array.isArray(data.opciones)) {
             // 1. Título
             actualizarTituloObra(data.nombre || 'Reserva de Entradas');
             
-            // 2. Cupos globales (usado por mostrarCupoSeleccionado)
+            // 2. Cupos globales
             todosLosCupos = data.cupos;
             
             // 3. Opciones y mostrar cupo
             cargarOpcionesEventos(data.opciones); 
 
         } else {
-            throw new Error(data.message || 'Error desconocido al cargar configuración.');
+            throw new Error(data.message || 'Error al procesar los datos del servidor. (¿Despliegue correcto?)');
         }
     })
     .catch(err => {
         console.error('Error FATAL al cargar configuración inicial:', err);
-        document.getElementById('cupoDiv').textContent = 'Error crítico: ' + err.message;
+        document.getElementById('cupoDiv').textContent = 'Error crítico: Verifique el despliegue de Apps Script.';
     });
 </script>
 </body>
 </html>
-
