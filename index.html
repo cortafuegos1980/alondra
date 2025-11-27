@@ -37,16 +37,16 @@
 /* Nuevo estilo para el cuadro de precio */
 .precio-caja {
     text-align: center;
-    margin: 20px auto 10px;
-    padding: 10px 15px;
+    /* ✅ Margen superior más pequeño */
+    margin: 15px auto 10px; 
+    /* ✅ Relleno interno más pequeño */
+    padding: 8px 15px; 
     max-width: 250px;
-    /* ✅ Borde fino y gris claro para sutileza */
     border: 1px solid #ddd; 
     border-radius: 6px;
-    /* ✅ Fondo casi blanco */
     background-color: #f9f9f9; 
     font-size: 1em;
-    color: #555; /* Texto principal gris oscuro */
+    color: #555; 
     font-weight: 600; 
 }
 
@@ -172,13 +172,14 @@ async function cargarNombreObra() {
             tituloObra.textContent = nuevoNombre;
 
             if (data.precio) {
-                // 👇 CLAVE: USAMOS EL NUEVO ESTILO Y SOLO EL MONTO
+                // ✅ CLAVE: Hacemos el texto "PRECIO POR UNIDAD" más pequeño con un estilo en línea
                 precioDiv.innerHTML = `
-                    PRECIO POR UNIDAD
+                    <span style="font-size:0.9em; display:block;">PRECIO POR UNIDAD</span>
                     <span class="precio-monto">$${data.precio}</span>
                 `;
             } else {
-                precioDiv.textContent = 'Precio no disponible.';
+                // Aseguramos que se muestre el error si no hay precio
+                precioDiv.innerHTML = 'Precio no disponible.'; 
             }
 
         } else {
@@ -411,6 +412,7 @@ fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTR
 </script>
 </body>
 </html>
+
 
 
 
