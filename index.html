@@ -218,15 +218,22 @@ function mostrarCupoSeleccionado() {
     const selectFecha = document.getElementById('fecha');
     const idSeleccionado = selectFecha.value;
     const cupoDiv = document.getElementById('cupoDiv');
-    
+
     if (todosLosCupos.hasOwnProperty(idSeleccionado)) {
         const cupoRestante = todosLosCupos[idSeleccionado];
 
-        if (cupoRestante === 0) {
-            cupoDiv.textContent = '¡Entradas agotadas!';
+        if (cupoRestante == 0) {
+            cupoDiv.textContent = '¡ENTRADAS AGOTADAS!';
+            cupoDiv.style.color = 'red';
+            cupoDiv.style.fontWeight = 'bold';
+            cupoDiv.style.textTransform = 'uppercase';
         } else {
             cupoDiv.textContent = 'Entradas disponibles: ' + cupoRestante;
+            cupoDiv.style.color = 'black';
+            cupoDiv.style.fontWeight = 'normal';
+            cupoDiv.style.textTransform = 'none';
         }
+
     } else {
         cupoDiv.textContent = 'Selecciona una función para ver disponibilidad.';
     }
@@ -326,6 +333,7 @@ fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTR
 </script>
 </body>
 </html>
+
 
 
 
