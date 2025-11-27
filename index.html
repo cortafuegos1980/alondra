@@ -181,15 +181,21 @@ function cargarOpcionesEventos(opciones) {
         opt.value = opcion.id; 
         
         let textoOpcion = opcion.texto;
-        // 💡 FIX: Añadir (AGOTADO) si el cupo es 0 o menos
         if (todosLosCupos.hasOwnProperty(opcion.id) && todosLosCupos[opcion.id] <= 0) {
             textoOpcion += ' (AGOTADO)';
-            opt.disabled = true; // Deshabilita la opción para que no se pueda seleccionar
+            
+            // 💡 CAMBIO CLAVE: Quitamos 'opt.disabled = true;'.
+            // Solo aplicamos el color gris para mantener la indicación visual.
+            opt.style.color = '#a0a0a0'; 
         }
         
         opt.textContent = textoOpcion; 
         select.appendChild(opt);
     });
+    
+    // Llamamos para mostrar el cupo visible y el estado del botón
+    mostrarCupoSeleccionado(); 
+}
     
     // Llamamos para mostrar el cupo visible y el estado del botón
     mostrarCupoSeleccionado(); 
@@ -228,6 +234,13 @@ function mostrarCupoSeleccionado() {
     const cupoDiv = document.getElementById('cupoDiv');
     const btnReservar = document.getElementById('btnReservar'); 
 
+    /* MOSTRAR CUPO SELECCIONADO */
+function mostrarCupoSeleccionado() {
+    const selectFecha = document.getElementById('fecha');
+    const idSeleccionado = selectFecha.value;
+    const cupoDiv = document.getElementById('cupoDiv');
+    const btnReservar = document.getElementById('btnReservar'); 
+
     // Limpiamos el color en línea por si acaso
     cupoDiv.style.color = 'initial'; 
     
@@ -235,19 +248,18 @@ function mostrarCupoSeleccionado() {
         const cupoRestante = todosLosCupos[idSeleccionado];
         
         if (cupoRestante <= 0) {
-            // 💡 FIX: AGOTADAS: Texto en rojo y botón deshabilitado
+            // ✅ AGOTADO: Mensaje en rojo y botón deshabilitado
             cupoDiv.textContent = '¡ENTRADAS AGOTADAS! 😭';
             cupoDiv.style.color = '#d32f2f'; // Rojo fuerte
-            btnReservar.disabled = true;
+            btnReservar.disabled = true; // <-- ESTA ES LA ÚNICA DESHABILITACIÓN
         } else {
-            // Disponible: Texto normal y botón habilitado
+            // Disponible
             cupoDiv.textContent = 'Entradas disponibles: ' + cupoRestante;
             btnReservar.disabled = false;
         }
     } else {
-        // Ninguna selección
         cupoDiv.textContent = 'Selecciona una función para ver disponibilidad.';
-        btnReservar.disabled = true; // Deshabilita si no hay evento seleccionado
+        btnReservar.disabled = true; 
     }
 }
 
@@ -355,3 +367,4 @@ async function actualizarCupoInicial() {
 </script>
 </body>
 </html>
+
