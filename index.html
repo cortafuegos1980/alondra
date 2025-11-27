@@ -178,14 +178,22 @@ function cargarOpcionesEventos(opciones) {
     }
 
     opciones.forEach(opcion => {
-        const opt = document.createElement('option');
-        opt.value = opcion.id; 
-        opt.textContent = opcion.texto; 
-        select.appendChild(opt);
-    });
-    
-    actualizarCupo();
-}
+    const opt = document.createElement('option');
+    opt.value = opcion.id;
+
+    const cupo = todosLosCupos[opcion.id];
+
+    if (cupo === 0) {
+        opt.textContent = opcion.texto + " (Agotado)";
+        opt.style.color = "#b5b5b5";  // gris claro
+    } else {
+        opt.textContent = opcion.texto;
+        opt.style.color = "black";
+    }
+
+    select.appendChild(opt);
+});
+
 
 /* ACTUALIZAR CUPO */
 async function actualizarCupo() {
@@ -333,6 +341,7 @@ fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTR
 </script>
 </body>
 </html>
+
 
 
 
