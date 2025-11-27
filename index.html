@@ -222,12 +222,12 @@ async function actualizarCupo() {
     }
 }
 
-    /* MOSTRAR CUPO SELECCIONADO */
+/* MOSTRAR CUPO SELECCIONADO */
 function mostrarCupoSeleccionado() {
     const selectFecha = document.getElementById('fecha');
     const idSeleccionado = selectFecha.value;
     const cupoDiv = document.getElementById('cupoDiv');
-    const btnReservar = document.getElementById('btnReservar'); // Aseguramos que tomamos el botón
+    // 🛑 Eliminamos 'const btnReservar = ...' para evitar confusiones, usamos la referencia directa.
 
     // Limpiamos el color en línea por si acaso
     cupoDiv.style.color = 'initial'; 
@@ -240,16 +240,17 @@ function mostrarCupoSeleccionado() {
             cupoDiv.textContent = '¡ENTRADAS AGOTADAS! 😭';
             cupoDiv.style.color = '#d32f2f'; // Rojo fuerte
             
-            // 🛑 LÍNEA CLAVE QUE DESHABILITA EL BOTÓN
-            btnReservar.disabled = true; 
+            // 🛑 DESHABILITACIÓN ROBUSTA: Usamos la referencia directa
+            document.getElementById('btnReservar').disabled = true; 
+            
         } else {
             // Disponible
             cupoDiv.textContent = 'Entradas disponibles: ' + cupoRestante;
-            btnReservar.disabled = false;
+            document.getElementById('btnReservar').disabled = false;
         }
     } else {
         cupoDiv.textContent = 'Selecciona una función para ver disponibilidad.';
-        btnReservar.disabled = true; 
+        document.getElementById('btnReservar').disabled = true; 
     }
 }
 
@@ -357,7 +358,3 @@ async function actualizarCupoInicial() {
 </script>
 </body>
 </html>
-
-
-
-
