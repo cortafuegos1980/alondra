@@ -5,13 +5,45 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cargando Obra...</title>
 <style>
+    /* *** ESTILOS CSS REVISADOS *** */
     body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
-    .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    .timer { background: #ffebee; color: #d32f2f; padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; margin-bottom: 15px; }
+    .container { 
+        max-width: 400px; 
+        margin: 0 auto; 
+        background: white; 
+        padding: 20px; 
+        border-radius: 10px; 
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+    }
+    .timer { 
+        background: #ffebee; 
+        color: #d32f2f; 
+        padding: 10px; 
+        border-radius: 5px; 
+        text-align: center; 
+        font-weight: bold; 
+        margin-bottom: 15px; 
+    }
     .form-group { margin-bottom: 15px; }
     label { display: block; margin-bottom: 5px; font-weight: bold; }
-    input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-    button { width: 100%; padding: 15px; background: #25D366; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    input, select { 
+        width: 100%; 
+        padding: 12px; 
+        border: 1px solid #ddd; 
+        border-radius: 5px; 
+        box-sizing: border-box; 
+    }
+    button { 
+        width: 100%; 
+        padding: 15px; 
+        background: #25D366; 
+        color: white; 
+        border: none; 
+        border-radius: 5px; 
+        font-size: 16px; 
+        font-weight: bold; 
+        cursor: pointer; 
+    }
     button.loading { background: #cccccc; cursor: not-allowed; }
     .message { padding: 10px; border-radius: 5px; margin-bottom: 15px; display: none; }
     .cupo { margin-bottom: 15px; font-weight: bold; }
@@ -22,8 +54,9 @@
         padding: 10px;
         border-radius: 5px;
     }
+    /* HONEYPOT (Esto hace que el campo anti-bot sea invisible) */
     .honeypot {
-        display: none;	
+        display: none !important;	/* ¡Aseguramos que no se vea! */
         visibility: hidden;
         height: 0;
         width: 0;
@@ -65,7 +98,7 @@
         </select>
     </div>
 
-    <div class="form-group honeypot">
+        <div class="form-group honeypot">
         <label for="apellidoBot">No llenar este campo:</label>
         <input type="text" id="apellidoBot" name="apellidoBot">
     </div>
@@ -143,7 +176,7 @@ function startTimer() {
     timerTimeout = setInterval(updateTimer, 1000);
 }
 
-/* CARGAR OPCIONES DEL EVENTO (SIMPLIFICADA) */
+/* CARGAR OPCIONES DEL EVENTO */
 function cargarOpcionesEventos(opciones) {
     const select = document.getElementById('fecha');
     select.innerHTML = '';
@@ -305,12 +338,13 @@ fetch(EXEC_URL + '?accion=obtenerConfigInicial&obra=' + encodeURIComponent(OBRA_
             cargarOpcionesEventos(data.opciones); 
 
         } else {
-            throw new Error(data.message || 'Error al procesar los datos del servidor. (¿Despliegue correcto?)');
+            // Maneja el error de forma clara
+            throw new Error(data.message || 'Error al procesar los datos del servidor. (Verifique el despliegue)');
         }
     })
     .catch(err => {
         console.error('Error FATAL al cargar configuración inicial:', err);
-        document.getElementById('cupoDiv').textContent = 'Error crítico: Verifique el despliegue de Apps Script.';
+        document.getElementById('cupoDiv').textContent = 'Error crítico: No se pudo conectar con el servidor. (Verifique el EXEC_URL y el Despliegue)';
     });
 </script>
 </body>
