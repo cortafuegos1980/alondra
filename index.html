@@ -34,11 +34,38 @@
         color: #D32F2F; /* El mismo rojo intenso de tu temporizador */
         font-weight: bold;
     }
+/* Nuevo estilo para el cuadro de precio */
+.precio-caja {
+    text-align: center;
+    margin: 20px auto 10px; /* Margen superior e inferior */
+    padding: 10px 15px; /* Relleno interno */
+    max-width: 250px; /* Ancho máximo para que no ocupe toda la pantalla */
+    border: 2px solid #4CAF50; /* Borde verde para destacar */
+    border-radius: 8px; /* Bordes redondeados */
+    background-color: #e8f5e9; /* Fondo verde muy claro */
+    font-size: 1.1em;
+    color: #333;
+    font-weight: bold;
+}
+
+.precio-monto {
+    font-size: 1.8em; /* Tamaño grande para el número */
+    color: #00796b; /* Color verde oscuro */
+    display: block; /* Para que el número vaya en su propia línea */
+    margin-top: 5px;
+}
+    
 </style>
 </head>
 <body>
 <div class="container">
     <h2 id="tituloObra">Cargando Obra...</h2>
+
+    <div id="precioUnitario" class="precio-caja">
+    Cargando precio...
+</div>
+
+    
     <p id="precioUnitario" style="text-align: center; margin-top: -10px; font-weight: bold; color: #555;">Cargando precio...</p>
     
     <div class="timer" id="timerDiv">Tiempo restante: 5:00</div>
@@ -121,7 +148,7 @@ function mostrarMensaje(texto, tipo = 'error') {
     }
 }
 
-/* CARGAR NOMBRE DE OBRA Y PRECIO (VERSIÓN CORREGIDA) */
+/* CARGAR NOMBRE DE OBRA Y PRECIO (VERSIÓN VISUALMENTE MEJORADA) */
 async function cargarNombreObra() {
     try {
         const url = EXEC_URL + '?accion=obtenerNombre&obra=' + encodeURIComponent(OBRA_FILTRO_NOMBRE);
@@ -134,7 +161,6 @@ async function cargarNombreObra() {
         const data = await response.json();
         
         const tituloObra = document.getElementById('tituloObra');
-        // 👇 ESTA ES LA CLAVE: OBTENER EL ELEMENTO PARA EL PRECIO
         const precioDiv = document.getElementById('precioUnitario'); 
 
         if (data.status === 'OK' && data.nombre) {
@@ -142,9 +168,12 @@ async function cargarNombreObra() {
             document.title = nuevoNombre;
             tituloObra.textContent = nuevoNombre;
 
-            // 👇 CLAVE 2: LEER data.precio Y MOSTRARLO
             if (data.precio) {
-                precioDiv.textContent = `Precio por unidad: $${data.precio}`;
+                // 👇 CLAVE: USAMOS EL NUEVO ESTILO Y SOLO EL MONTO
+                precioDiv.innerHTML = `
+                    PRECIO POR UNIDAD
+                    <span class="precio-monto">$${data.precio}</span>
+                `;
             } else {
                 precioDiv.textContent = 'Precio no disponible.';
             }
@@ -379,6 +408,7 @@ fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTR
 </script>
 </body>
 </html>
+
 
 
 
