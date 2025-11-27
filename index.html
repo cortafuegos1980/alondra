@@ -34,14 +34,15 @@
         color: #D32F2F; /* El mismo rojo intenso de tu temporizador */
         font-weight: bold;
     }
-/* Nuevo estilo para el cuadro de precio */
+/* Nuevo estilo para el cuadro de precio (VERSIÓN DELICADA Y COMPACTA) */
 .precio-caja {
     text-align: center;
-    /* ✅ Margen superior más pequeño */
+    /* Margen más pequeño */
     margin: 15px auto 10px; 
-    /* ✅ Relleno interno más pequeño */
+    /* Relleno interno compacto */
     padding: 8px 15px; 
     max-width: 250px;
+    /* Estilo sutil */
     border: 1px solid #ddd; 
     border-radius: 6px;
     background-color: #f9f9f9; 
@@ -51,8 +52,10 @@
 }
 
 .precio-monto {
-    font-size: 1.4em; /* Tamaño grande, pero no demasiado */
-    color: #000; /* ✅ Precio en negro para sobriedad */
+    /* Tamaño moderado */
+    font-size: 1.4em; 
+    /* Color neutro */
+    color: #000; 
     display: block;
     margin-top: 5px;
     font-weight: bold;
@@ -64,10 +67,8 @@
 <div class="container">
     <h2 id="tituloObra">Cargando Obra...</h2>
 
-    <div id="precioUnitario" class="precio-caja">
-    Cargando precio...
-</div>
-
+    <div id="precioUnitario" class="precio-caja"></div>
+    
     
     <p id="precioUnitario" style="text-align: center; margin-top: -10px; font-weight: bold; color: #555;">Cargando precio...</p>
     
@@ -412,6 +413,7 @@ fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTR
 </script>
 </body>
 </html>
+
 
 
 
