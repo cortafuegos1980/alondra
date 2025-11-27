@@ -15,18 +15,18 @@
             margin-bottom: 10px;
         }
 
-        /* 🔹 Select normal */
+        /* Estilo de opciones normales */
         #funcionesSelect option {
             padding: 6px;
         }
 
-        /* 🔹 Opción agotada */
+        /* Opción agotada */
         .agotada {
             color: #8b8b8b !important;
             background-color: #f0f0f0 !important;
         }
 
-        /* 🔹 Mensaje (éxito o error) */
+        /* Mensajes */
         #message {
             margin-top: 15px;
             padding: 10px;
@@ -46,19 +46,21 @@
     <div id="message"></div>
 
     <script>
-        /* ==========================================
-           CARGAR FUNCIONES DESDE API
-        ========================================== */
+        /* ================================
+           CARGAR FUNCIONES DESDE GOOGLE
+        ================================ */
         async function cargarFunciones() {
             const select = document.getElementById("funcionesSelect");
 
             try {
-                const res = await fetch("https://script.google.com/macros/s/AKfycbyCoBk8cOyzJZEHESWk5nAuio3LDCAe9fCzi-lK6kR0XQl9dtUGDD7kVNWt7Ipdqec9/exec?action=getFunciones");
+                const res = await fetch(
+                    "https://script.google.com/macros/s/AKfycbyCoBk8cOyzJZEHESWk5nAuio3LDCAe9fCzi-lK6kR0XQl9dtUGDD7kVNWt7Ipdqec9/exec?action=getFunciones"
+                );
+
                 const funciones = await res.json();
 
                 funciones.forEach(f => {
-                    let texto = `${f.fecha} - ${f.hora} hs ($${f.precio})`;
-
+                    const texto = `${f.fecha} - ${f.hora} hs ($${f.precio})`;
                     const option = document.createElement("option");
                     option.value = f.id;
 
@@ -78,9 +80,9 @@
             }
         }
 
-        /* ==========================================
-           MOSTRAR MENSAJE
-        ========================================== */
+        /* ================================
+           MENSAJES
+        ================================ */
         function mostrarMensaje(texto, tipo) {
             const div = document.getElementById("message");
             div.textContent = texto;
@@ -89,19 +91,16 @@
             if (tipo === "success") {
                 div.style.backgroundColor = "#d4edda";
                 div.style.color = "#155724";
-
                 setTimeout(() => div.style.display = "none", 4000);
-
             } else {
                 div.style.backgroundColor = "#f8d7da";
                 div.style.color = "#721c24";
             }
         }
 
-        // 🔹 Inicializar
+        // Iniciar
         cargarFunciones();
     </script>
 
 </body>
 </html>
-
