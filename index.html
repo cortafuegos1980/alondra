@@ -219,7 +219,12 @@ function mostrarCupoSeleccionado() {
     
     if (todosLosCupos.hasOwnProperty(idSeleccionado)) {
         const cupoRestante = todosLosCupos[idSeleccionado];
-        cupoDiv.textContent = 'Entradas disponibles: ' + cupoRestante;
+
+        if (cupoRestante === 0) {
+            cupoDiv.textContent = '¡Entradas agotadas!';
+        } else {
+            cupoDiv.textContent = 'Entradas disponibles: ' + cupoRestante;
+        }
     } else {
         cupoDiv.textContent = 'Selecciona una función para ver disponibilidad.';
     }
@@ -319,5 +324,6 @@ fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTR
 </script>
 </body>
 </html>
+
 
 
