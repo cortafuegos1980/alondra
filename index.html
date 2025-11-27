@@ -16,19 +16,19 @@
     .message { padding: 10px; border-radius: 5px; margin-bottom: 15px; display: none; }
     .cupo { margin-bottom: 15px; font-weight: bold; }
     .buscando {	
-        background: #e6ffe6; 
+        background: #e6ffe6;	
         color: #155724;	
         border: 1px solid #c3e6cb;
         padding: 10px;
         border-radius: 5px;
     }
     .honeypot {
-        display: none; 
+        display: none;	
         visibility: hidden;
         height: 0;
         width: 0;
         position: absolute;
-        left: -9999px; 
+        left: -9999px;	
     }
 </style>
 </head>
@@ -42,11 +42,11 @@
     
     <div class="form-group">
         <label>Apellido y Nombre:</label>
-        <input type="text" id="nombre" placeholder="Ej: Mar&#237;a Gonz&#225;lez">
+        <input type="text" id="nombre" placeholder="Ej: María González">
     </div>
 
     <div class="form-group">
-        <label>Tu WhatsApp (S&#243;lo n&#250;meros, sin 0 ni 15):</label>
+        <label>Tu WhatsApp (Sólo números, sin 0 ni 15):</label>
         <input type="tel" id="telefono" placeholder="Ej: 3415123456">
     </div>
 
@@ -106,7 +106,6 @@ function mostrarMensaje(texto, tipo = 'error') {
 /* CARGAR NOMBRE DE OBRA */
 async function cargarNombreObra() {
     try {
-        console.log('Fetching nombre de obra...');
         const url = EXEC_URL + '?accion=obtenerNombre&obra=' + encodeURIComponent(OBRA_FILTRO_NOMBRE);
         const response = await fetch(url); 
         
@@ -120,11 +119,9 @@ async function cargarNombreObra() {
             const nuevoNombre = 'Reserva Entradas - ' + data.nombre;
             document.title = nuevoNombre;
             document.getElementById('tituloObra').textContent = nuevoNombre;
-            console.log('Nombre de obra cargado: ' + data.nombre);
         } else {
             document.title = 'Reserva de Entradas';
             document.getElementById('tituloObra').textContent = 'Reserva de Entradas';
-            console.error('No se pudo obtener el nombre de la obra.', data);
         }
     } catch(err) {
         console.error('Error FATAL al cargar nombre de obra (EXEC_URL incorrecta?):', err);
@@ -134,7 +131,6 @@ async function cargarNombreObra() {
 /* TEMPORIZADOR */
 function startTimer() {
     let duration = 5 * 60; 
-    console.log('Temporizador iniciado.');
 
     function updateTimer() {
         const minutes = parseInt(duration / 60, 10);
@@ -143,8 +139,8 @@ function startTimer() {
         const displayMinutes = minutes < 10 ? "0" + minutes : minutes;
         const displaySeconds = seconds < 10 ? "0" + seconds : seconds;
 
-        // EMOJI FIJO POR UNICODE
-        document.getElementById('timerDiv').textContent = "\u23F1 Tiempo restante: " + displayMinutes + ":" + displaySeconds; 
+        // FIX FINAL: EMOJI DIRECTO EN JS (Depende de UTF-8, la forma más limpia)
+        document.getElementById('timerDiv').textContent = "⏱️ Tiempo restante: " + displayMinutes + ":" + displaySeconds; 
 
         if (--duration < 0) {
             clearInterval(timerTimeout); 
@@ -201,7 +197,7 @@ async function actualizarCupo() {
     } catch(err) {
         console.error('Error al consultar cupo:', err);
         cupoDiv.classList.remove('buscando');
-        cupoDiv.textContent = 'Error de conexi&#243;n.';
+        cupoDiv.textContent = 'Error de conexión.';
     }
 }
 
@@ -215,7 +211,7 @@ function mostrarCupoSeleccionado() {
         const cupoRestante = todosLosCupos[idSeleccionado];
         cupoDiv.textContent = 'Entradas disponibles: ' + cupoRestante;
     } else {
-        cupoDiv.textContent = 'Selecciona una funci&#243;n para ver disponibilidad.';
+        cupoDiv.textContent = 'Selecciona una función para ver disponibilidad.';
     }
 }
 
@@ -228,14 +224,16 @@ document.getElementById('btnReservar').onclick = async function() {
     const fecha = document.getElementById('fecha').value; 
 
     if (!nombre || !telefonoCliente || !cantidad || !fecha) {
-        mostrarMensaje('&#128161; Completa todos los campos correctamente.', 'error');
+        // FIX: EMOJI Y ACENTOS DIRECTOS EN JS
+        mostrarMensaje('💡 Completa todos los campos correctamente.', 'error');
         return;
     }
 
     // VALIDACIÓN HONEYPOT (ANTI-SPAM)
     const apellidoBot = document.getElementById('apellidoBot').value.trim();
     if (apellidoBot.length > 0) {
-        mostrarMensaje('&#10060; Error de validaci&#243;n de formulario.', 'error');
+        // FIX: EMOJI Y ACENTOS DIRECTOS EN JS
+        mostrarMensaje('❌ Error de validación de formulario.', 'error');
         return; 
     }
 
@@ -255,35 +253,38 @@ document.getElementById('btnReservar').onclick = async function() {
         const data = await response.json();
 
         if (data.status === 'OK') {
-            mostrarMensaje('&#9989; &#161;RESERVA EXITOSA! ID: ' + data.id + '. Total a pagar: $' + data.montoTotal + '. Redirigiendo a WhatsApp...', 'exito');
+            // FIX: EMOJI Y ACENTOS DIRECTOS EN JS
+            mostrarMensaje(`✅ ¡RESERVA EXITOSA! ID: ${data.id}. Total a pagar: $${data.montoTotal}. Redirigiendo a WhatsApp...`, 'exito');
             
             // Construcción del Mensaje de WhatsApp 
             const mensajeWhatsApp = [
-                '&#161;Hola! Mi reserva es la ID: *' + data.id + '*.',
-                'Confirmo la reserva de *' + cantidad + '* entradas.',
-                'Mi tel&#233;fono (Cliente) es: *' + telefonoCliente + '*', 
-                'El monto total es de *$' + data.montoTotal + '*.',
-                '',
-                '&#9733; *LINK DE PAGO MERCADO PAGO:*',
-                '' + data.linkPago + '', 
-                '',
-                '*IMPORTANTE:* Si el pago no se realiza en 5 minutos, la reserva puede cancelarse.'
+                `¡Hola! Mi reserva es la ID: *${data.id}*.`,
+                `Confirmo la reserva de *${cantidad}* entradas.`,
+                `Mi teléfono (Cliente) es: *${telefonoCliente}*`, 
+                `El monto total es de *$${data.montoTotal}*.`,
+                ``,
+                `⭐ *LINK DE PAGO MERCADO PAGO:*`,
+                `${data.linkPago}`, 
+                ``,
+                `*IMPORTANTE:* Si el pago no se realiza en 5 minutos, la reserva puede cancelarse.`
             ].join('\n'); 
 
             const mensajeURL = encodeURIComponent(mensajeWhatsApp);
             
             // Abre WhatsApp con el número del Gestor
-            window.open('https://wa.me/' + MANAGER_WHATSAPP_NUMBER + '?text=' + mensajeURL, '_blank');
+            window.open(`https://wa.me/${MANAGER_WHATSAPP_NUMBER}?text=${mensajeURL}`, '_blank');
             
             document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante;
             actualizarCupo();
         } else {
-            mostrarMensaje('&#10060; Error al reservar: ' + data.message, 'error');
+            // FIX: EMOJI DIRECTO EN JS
+            mostrarMensaje('❌ Error al reservar: ' + data.message, 'error');
             startTimer(); 
         }
         
     } catch(err) {
-        mostrarMensaje('&#10060; Error de conexi&#243;n o red: ' + err.message, 'error');
+        // FIX: EMOJI Y ACENTOS DIRECTOS EN JS
+        mostrarMensaje('❌ Error de conexión o red: ' + err.message, 'error');
         startTimer(); 
     }
 
