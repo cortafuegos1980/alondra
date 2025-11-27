@@ -46,7 +46,7 @@
     </div>
 
     <div class="form-group">
-        <label>Tu WhatsApp (Sin 0 ni 15):</label>
+        <label>Tu WhatsApp (Sólo números, sin 0 ni 15):</label>
         <input type="tel" id="telefono" placeholder="Ej: 3415123456">
     </div>
 
@@ -86,6 +86,13 @@ let todosLosCupos = {};
 /* Función para mostrar mensajes de estado */
 function mostrarMensaje(texto, tipo = 'error') {
     const messageDiv = document.getElementById('message');
+    
+    // Si no hay texto, ocultar el div y salir.
+    if (!texto) {
+        messageDiv.style.display = 'none';
+        return;
+    }
+
     messageDiv.textContent = texto;
     messageDiv.style.display = 'block';
     messageDiv.className = 'message'; 
@@ -93,14 +100,18 @@ function mostrarMensaje(texto, tipo = 'error') {
     if (tipo === 'exito') {
         messageDiv.style.backgroundColor = '#d4edda'; 
         messageDiv.style.color = '#155724'; 
+        
+        // Mensaje de ÉXITO desaparece (porque viene una redirección)
+        setTimeout(() => {
+            messageDiv.style.display = 'none';
+        }, 8000); 
+
     } else if (tipo === 'error') {
         messageDiv.style.backgroundColor = '#f8d7da'; 
         messageDiv.style.color = '#721c24'; 
+        
+        // 🛑 FIX: Mensaje de ERROR PERMANECE visible (NO se usa setTimeout)
     }
-    
-    setTimeout(() => {
-        messageDiv.style.display = 'none';
-    }, 8000); 
 }
 
 /* CARGAR NOMBRE DE OBRA */
@@ -139,7 +150,6 @@ function startTimer() {
         const displayMinutes = minutes < 10 ? "0" + minutes : minutes;
         const displaySeconds = seconds < 10 ? "0" + seconds : seconds;
 
-        // FIX FINAL: EMOJI DIRECTO EN JS (Depende de UTF-8, la forma más limpia)
         document.getElementById('timerDiv').textContent = "⏱️ Tiempo restante: " + displayMinutes + ":" + displaySeconds; 
 
         if (--duration < 0) {
@@ -179,7 +189,7 @@ function cargarOpcionesEventos(opciones) {
 async function actualizarCupo() {
     const cupoDiv = document.getElementById('cupoDiv');
     
-    cupoDiv.textContent = 'Buscando disponibilidad';
+    cupoDiv.textContent = 'Buscando disponibilidad...';
     cupoDiv.classList.add('buscando'); 
     
     try {
@@ -218,13 +228,15 @@ function mostrarCupoSeleccionado() {
 
 /* BOTON RESERVA */
 document.getElementById('btnReservar').onclick = async function() {
+    // 🛑 FIX: Limpiar mensaje anterior al iniciar el proceso
+    mostrarMensaje(''); 
+
     const nombre = document.getElementById('nombre').value.trim();
     const telefonoCliente = document.getElementById('telefono').value.trim().replace(/\D/g,''); 
     const cantidad = parseInt(document.getElementById('cantidad').value);
     const fecha = document.getElementById('fecha').value; 
 
     if (!nombre || !telefonoCliente || !cantidad || !fecha) {
-        // FIX: EMOJI Y ACENTOS DIRECTOS EN JS
         mostrarMensaje('💡 Completa todos los campos.', 'error');
         return;
     }
@@ -232,7 +244,6 @@ document.getElementById('btnReservar').onclick = async function() {
     // VALIDACIÓN HONEYPOT (ANTI-SPAM)
     const apellidoBot = document.getElementById('apellidoBot').value.trim();
     if (apellidoBot.length > 0) {
-        // FIX: EMOJI Y ACENTOS DIRECTOS EN JS
         mostrarMensaje('❌ Error de validación de formulario.', 'error');
         return; 
     }
@@ -253,7 +264,6 @@ document.getElementById('btnReservar').onclick = async function() {
         const data = await response.json();
 
         if (data.status === 'OK') {
-            // FIX: EMOJI Y ACENTOS DIRECTOS EN JS
             mostrarMensaje(`✅ ¡RESERVA EXITOSA! ID: ${data.id}. Total a pagar: $${data.montoTotal}. Redirigiendo a WhatsApp...`, 'exito');
             
             // Construcción del Mensaje de WhatsApp 
@@ -277,13 +287,13 @@ document.getElementById('btnReservar').onclick = async function() {
             document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante;
             actualizarCupo();
         } else {
-            // FIX: EMOJI DIRECTO EN JS
+            // Error: El mensaje se queda fijo
             mostrarMensaje('❌ Error al reservar: ' + data.message, 'error');
             startTimer(); 
         }
         
     } catch(err) {
-        // FIX: EMOJI Y ACENTOS DIRECTOS EN JS
+        // Error: El mensaje se queda fijo
         mostrarMensaje('❌ Error de conexión o red: ' + err.message, 'error');
         startTimer(); 
     }
@@ -309,5 +319,3 @@ fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTR
 </script>
 </body>
 </html>
-
-
