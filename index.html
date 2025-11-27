@@ -121,28 +121,41 @@ function mostrarMensaje(texto, tipo = 'error') {
     }
 }
 
-/* CARGAR NOMBRE DE OBRA */
+/* CARGAR NOMBRE DE OBRA Y PRECIO (VERSIÓN CORREGIDA) */
 async function cargarNombreObra() {
     try {
         const url = EXEC_URL + '?accion=obtenerNombre&obra=' + encodeURIComponent(OBRA_FILTRO_NOMBRE);
         const response = await fetch(url); 
         
-        if (!response.ok) {
-             throw new Error(`Error HTTP: ${response.status}`);
+        if (!response.ok) { 
+            throw new Error(`Error HTTP: ${response.status}`); 
         }
         
         const data = await response.json();
         
+        const tituloObra = document.getElementById('tituloObra');
+        // 👇 ESTA ES LA CLAVE: OBTENER EL ELEMENTO PARA EL PRECIO
+        const precioDiv = document.getElementById('precioUnitario'); 
+
         if (data.status === 'OK' && data.nombre) {
             const nuevoNombre = 'Reserva Entradas - ' + data.nombre;
             document.title = nuevoNombre;
-            document.getElementById('tituloObra').textContent = nuevoNombre;
+            tituloObra.textContent = nuevoNombre;
+
+            // 👇 CLAVE 2: LEER data.precio Y MOSTRARLO
+            if (data.precio) {
+                precioDiv.textContent = `Precio por unidad: $${data.precio}`;
+            } else {
+                precioDiv.textContent = 'Precio no disponible.';
+            }
+
         } else {
             document.title = 'Reserva de Entradas';
-            document.getElementById('tituloObra').textContent = 'Reserva de Entradas';
+            tituloObra.textContent = 'Reserva de Entradas';
+            if (precioDiv) precioDiv.textContent = 'Precio no disponible.';
         }
     } catch(err) {
-        console.error('Error FATAL al cargar nombre de obra (EXEC_URL incorrecta?):', err);
+        console.error('Error FATAL al cargar nombre de obra y precio:', err);
     }
 }
 
@@ -366,6 +379,7 @@ fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTR
 </script>
 </body>
 </html>
+
 
 
 
