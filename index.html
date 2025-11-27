@@ -231,21 +231,28 @@ function mostrarCupoSeleccionado() {
     const idSeleccionado = selectFecha.value;
     const cupoDiv = document.getElementById('cupoDiv');
 
+    // Actualiza texto del cupo
     if (todosLosCupos.hasOwnProperty(idSeleccionado)) {
         const cupoRestante = todosLosCupos[idSeleccionado];
 
-        if (cupoRestante == 0) {
-            cupoDiv.textContent = '¡ENTRADAS AGOTADAS!';
-            cupoDiv.style.color = 'red';
-            cupoDiv.style.fontWeight = 'bold';
-            cupoDiv.style.textTransform = 'uppercase';
-        } else {
-            cupoDiv.textContent = 'Entradas disponibles: ' + cupoRestante;
-            cupoDiv.style.color = 'black';
-            cupoDiv.style.fontWeight = 'normal';
-            cupoDiv.style.textTransform = 'none';
-        }
+        // Actualiza indicador superior
+        cupoDiv.textContent = (cupoRestante === 0)
+            ? '¡ENTRADAS AGOTADAS!'
+            : 'Entradas disponibles: ' + cupoRestante;
 
+        // Recorre todas las opciones y actualiza texto + color
+        const opciones = selectFecha.options;
+        for (let opt of opciones) {
+            const cupo = todosLosCupos[opt.value];
+
+            if (cupo === 0) {
+                opt.textContent = opt.textContent.split(" (")[0] + " (Agotado)";
+                opt.style.color = "#b5b5b5"; // gris claro
+            } else {
+                opt.textContent = opt.textContent.split(" (")[0];
+                opt.style.color = "black";
+            }
+        }
     } else {
         cupoDiv.textContent = 'Selecciona una función para ver disponibilidad.';
     }
@@ -345,6 +352,7 @@ fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTR
 </script>
 </body>
 </html>
+
 
 
 
