@@ -42,11 +42,11 @@
     
     <div class="form-group">
         <label>Apellido y Nombre:</label>
-        <input type="text" id="nombre" placeholder="Ej: Maria Gonzalez">
+        <input type="text" id="nombre" placeholder="Ej: Mar&#237;a Gonz&#225;lez">
     </div>
 
     <div class="form-group">
-        <label>Tu WhatsApp (S車lo n迆meros, sin 0 ni 15):</label>
+        <label>Tu WhatsApp (S&#243;lo n&#250;meros, sin 0 ni 15):</label>
         <input type="tel" id="telefono" placeholder="Ej: 3415123456">
     </div>
 
@@ -133,8 +133,8 @@ function startTimer() {
         const displayMinutes = minutes < 10 ? "0" + minutes : minutes;
         const displaySeconds = seconds < 10 ? "0" + seconds : seconds;
 
-        // ACENTO RESTAURADO
-        document.getElementById('timerDiv').textContent = "Tiempo restante: " + displayMinutes + ":" + displaySeconds; 
+        // EMOJI RESTAURADO
+        document.getElementById('timerDiv').textContent = "?? Tiempo restante: " + displayMinutes + ":" + displaySeconds; 
 
         if (--duration < 0) {
             clearInterval(timerTimeout); 
@@ -186,14 +186,14 @@ async function actualizarCupo() {
             todosLosCupos = data.cupos; 
             mostrarCupoSeleccionado(); 
         } else {
-            // ACENTO RESTAURADO
+            // ACENTO FIJO
             cupoDiv.textContent = 'Error al verificar cupo.';
         }
     } catch(err) {
         console.error('Error al consultar cupo:', err);
         cupoDiv.classList.remove('buscando');
-        // ACENTO RESTAURADO
-        cupoDiv.textContent = 'Error de conexi車n.';
+        // ACENTO FIJO
+        cupoDiv.textContent = 'Error de conexi&#243;n.';
     }
 }
 
@@ -207,8 +207,8 @@ function mostrarCupoSeleccionado() {
         const cupoRestante = todosLosCupos[idSeleccionado];
         cupoDiv.textContent = 'Entradas disponibles: ' + cupoRestante;
     } else {
-        // ACENTO RESTAURADO
-        cupoDiv.textContent = 'Selecciona una funci車n para ver disponibilidad.';
+        // ACENTO FIJO
+        cupoDiv.textContent = 'Selecciona una funci&#243;n para ver disponibilidad.';
     }
 }
 
@@ -221,16 +221,16 @@ document.getElementById('btnReservar').onclick = async function() {
     const fecha = document.getElementById('fecha').value; 
 
     if (!nombre || !telefonoCliente || !cantidad || !fecha) {
-        // ACENTO RESTAURADO
-        mostrarMensaje('Completa todos los campos correctamente.', 'error');
+        // EMOJI FIJO
+        mostrarMensaje('&#128161; Completa todos los campos correctamente.', 'error');
         return;
     }
 
     // VALIDACI車N HONEYPOT (ANTI-SPAM)
     const apellidoBot = document.getElementById('apellidoBot').value.trim();
     if (apellidoBot.length > 0) {
-        // ACENTO RESTAURADO
-        mostrarMensaje('Error de validaci車n de formulario.', 'error');
+        // EMOJI Y ACENTO FIJOS
+        mostrarMensaje('&#10060; Error de validaci&#243;n de formulario.', 'error');
         return; 
     }
 
@@ -246,30 +246,4 @@ document.getElementById('btnReservar').onclick = async function() {
     clearInterval(timerTimeout); 
 
     try {
-        const response = await fetch(EXEC_URL, { method: 'POST', body: formData }); 
-        const data = await response.json();
-
-        if (data.status === 'OK') {
-            // ACENTO RESTAURADO
-            mostrarMensaje(`?RESERVA EXITOSA! ID: ${data.id}. Total a pagar: $${data.montoTotal}. Redirigiendo a WhatsApp...`, 'exito');
-            
-            // Construcci車n del Mensaje de WhatsApp 
-            const mensajeWhatsApp = [
-                `?Hola! Mi reserva es la ID: *${data.id}*.`,
-                `Confirmo la reserva de *${cantidad}* entradas.`,
-                // ACENTO RESTAURADO
-                `Mi tel谷fono (Cliente) es: *${telefonoCliente}*`, 
-                `El monto total es de *$${data.montoTotal}*.`,
-                ``,
-                `? *LINK DE PAGO MERCADO PAGO:*`,
-                `${data.linkPago}`, 
-                ``,
-                `*IMPORTANTE:* Si el pago no se realiza en 5 minutos, la reserva puede cancelarse.`
-            ].join('\n'); 
-
-            const mensajeURL = encodeURIComponent(mensajeWhatsApp);
-            
-            // Abre WhatsApp con el n迆mero del Gestor
-            window.open(`https://wa.me/${MANAGER_WHATSAPP_NUMBER}?text=${mensajeURL}`, '_blank');
-            
-            document.getElementById('cupoDiv').textContent = 'Entradas disponibles: ' + data.cupoRestante
+        const response = await fetch(EXEC_URL, { method
