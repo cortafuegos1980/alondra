@@ -46,7 +46,7 @@
     </div>
 
     <div class="form-group">
-        <label>Tu WhatsApp (Sólo números, sin 0 ni 15):</label>
+        <label>Tu WhatsApp (Sin 0 ni 15):</label>
         <input type="tel" id="telefono" placeholder="Ej: 3415123456">
     </div>
 
@@ -179,7 +179,7 @@ function cargarOpcionesEventos(opciones) {
 async function actualizarCupo() {
     const cupoDiv = document.getElementById('cupoDiv');
     
-    cupoDiv.textContent = 'Buscando entradas...';
+    cupoDiv.textContent = 'Buscando disponibilidad';
     cupoDiv.classList.add('buscando'); 
     
     try {
@@ -309,4 +309,5 @@ fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTR
 </script>
 </body>
 </html>
+
 
