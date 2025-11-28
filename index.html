@@ -1,410 +1,450 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <base target="_top">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Reserva de Entradas</title>
-    
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        .container {
-            max-width: 500px;
-            margin-top: 50px;
-        }
-        .card {
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        h2 {
-            font-weight: 700;
-            color: #343a40;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .form-group label {
-            font-weight: 500;
-        }
-        .btn-success {
-            background-color: #28a745;
-            border-color: #28a745;
-            transition: background-color 0.3s;
-            width: 100%;
-        }
-        .btn-success:hover {
-            background-color: #218838;
-            border-color: #1e7e34;
-        }
-        #mensajeError, #mensajeExito {
-            display: none;
-            text-align: center;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        #mensajeError {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        #mensajeExito {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        #infoPanel {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 10px;
-            border-radius: 8px;
-            background-color: #e9ecef;
-        }
-        .info-item {
-            text-align: center;
-            font-size: 1.1rem;
-        }
-        .info-item strong {
-            display: block;
-            font-size: 1.5rem;
-            color: #007bff;
-        }
-        #precioUnitario {
-            color: #28a745;
-            font-weight: bold;
-            font-size: 1.6rem;
-            margin-top: 5px;
-        }
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        /* Estilo para el panel de precio/tiempo/cupo */
-        #detallesPanel {
-            border: 1px solid #ccc;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            background-color: #fff;
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr; /* Tres columnas */
-            gap: 10px;
-            text-align: center;
-        }
-        .detalle-item {
-            padding: 5px 0;
-            border-radius: 3px;
-        }
-        .detalle-item h5 {
-            font-size: 0.8rem;
-            color: #6c757d;
-            margin-bottom: 3px;
-        }
-        .detalle-item span {
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-        .detalle-item.precio span {
-            color: #28a745;
-        }
-        .detalle-item.cupo span {
-            color: #007bff;
-        }
-        .detalle-item.tiempo span {
-            color: #dc3545;
-        }
-        /* El spinner que se muestra mientras carga */
-        #precioLoading {
-            text-align: center;
-            padding: 10px;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva Entradas</title>
+    
+    <style>
+        /* Estilos Globales */
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
+        .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #25D366; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        button.loading { background: #cccccc; cursor: not-allowed; }
+        .message { padding: 10px; border-radius: 5px; margin-bottom: 15px; display: none; }
 
-    </style>
+        /* Anti-spam */
+        .honeypot { display: none; visibility: hidden; height: 0; width: 0; position: absolute; left: -9999px; }
+
+        /* --- ESTILOS COMPACTOS FINALES (3 COLUMNAS UNIFORMES) --- */
+
+        #contenedor-superior {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch; 
+            flex-wrap: wrap; 
+            margin-bottom: 20px;
+        }
+
+        .caja-estado-superior {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background-color: #f9f9f9; 
+            margin: 5px;
+            text-align: center;
+            flex-grow: 1; 
+            flex-basis: 0; 
+        }
+
+        .precio-caja {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background-color: #f9f9f9; 
+            font-size: 0.9em;
+            color: #555; 
+            font-weight: 600; 
+            flex-grow: 1;
+            flex-basis: 0; 
+            margin: 5px;
+            text-align: center;
+        }
+
+        .precio-monto {
+            font-size: 1.2em; 
+            color: #000; 
+            display: block;
+            margin-top: 3px; 
+            font-weight: bold;
+        }
+
+        .info-estado {
+            font-size: 0.9em;
+            font-weight: bold;
+            margin: 3px 0; 
+        }
+
+        .agotado-rojo {
+            color: #D32F2F; 
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
+    
+    <div class="container">
+        <h2 id="tituloObra">Cargando Obra...</h2>
 
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner-border text-primary" role="status">
-            <span class="sr-only">Cargando...</span>
-        </div>
-    </div>
+        <div id="contenedor-superior">
+            
+            <div id="precioUnitario" class="precio-caja">
+                <span style="font-size:0.9em; display:block;">VALOR</span>
+                <span id="precioMonto" class="precio-monto">...</span>
+            </div> 
+            
+            <div id="caja-cupo" class="caja-estado-superior">
+                <div id="cupoDiv" class="info-estado">Cargando cupo...</div>
+            </div>
+            
+            <div id="caja-tiempo" class="caja-estado-superior">
+                <div id="timerDiv" class="info-estado">⏱️ 05:00</div>
+            </div>
+            
+        </div>
+        <div id="message" class="message"></div>
+        
+        <div class="form-group">
+            <label>Apellido y Nombre:</label>
+            <input type="text" id="nombre" placeholder="Ej: María González">
+        </div>
 
-    <div class="container">
-        <div class="card">
-            <h2 id="obraTitulo">Reserva Entradas - Cargando...</h2>
-            
-            <div id="mensajeError"></div>
-            <div id="mensajeExito"></div>
+        <div class="form-group">
+            <label>Tu WhatsApp (Sin 0 ni 15):</label>
+            <input type="tel" id="telefono" placeholder="Ej: 3415123456" onkeypress="return isNumberKey(event)">
+        </div>
 
-            <div id="detallesPanel">
-                <div class="detalle-item precio">
-                    <h5>PRECIO POR UNIDAD</h5>
-                    <div id="precioDisplay">
-                        <span id="precioValor">...</span>
-                        <div id="precioLoading" class="text-secondary" style="font-size: 0.8rem;">Cargando precio...</div>
-                    </div>
-                </div>
-                <div class="detalle-item tiempo">
-                    <h5>TIEMPO RESTANTE</h5>
-                    <span id="tiempoRestante">00:00</span>
-                </div>
-                <div class="detalle-item cupo">
-                    <h5>DISPONIBLES</h5>
-                    <span id="cupoDisponible">...</span>
-                </div>
-            </div>
+        <div class="form-group">
+            <label>Cantidad:</label>
+            <input type="number" id="cantidad" min="1" max="10" value="1">
+        </div>
 
-            <form id="reservaForm">
-                
-                <div class="form-group">
-                    <label for="nombre">Apellido y Nombre:</label>
-                    <input type="text" class="form-control" id="nombre" name="nombre" required placeholder="Ej: Juan Pérez">
-                </div>
-                
-                <div class="form-group">
-                    <label for="telefono">Tu WhatsApp (Solo números, sin 0 ni 15):</label>
-                    <input type="tel" class="form-control" id="telefono" name="telefono" required placeholder="Ej: 3512345678" pattern="[0-9]{8,15}">
-                </div>
+        <div class="form-group">
+            <label>Fecha del Evento:</label>
+            <select id="fecha">
+              <option value="">Cargando eventos...</option>
+            </select>
+        </div>
 
-                <div class="form-group">
-                    <label for="cantidad">Cantidad:</label>
-                    <input type="number" class="form-control" id="cantidad" name="cantidad" required min="1" max="10" value="1">
-                </div>
+        <div class="form-group honeypot">
+            <label for="apellidoBot">No llenar este campo:</label>
+            <input type="text" id="apellidoBot" name="apellidoBot">
+        </div>
 
-                <div class="form-group">
-                    <label for="fecha">Fecha del Evento:</label>
-                    <select class="form-control" id="fecha" name="fecha" required disabled>
-                        <option value="">Cargando fechas...</option>
-                    </select>
-                </div>
+        <button id="btnReservar">Reservar</button>
+    </div>
+    
+    <script>
+        // *** 1. CONFIGURACIÓN CRUCIAL ***
+        // 💡 RECUERDA: Si lo pones en GitHub Pages, ¡DEBES PONER LA URL FIJA AQUÍ!
+        const EXEC_URL = 'https://script.google.com/macros/s/AKfycbznmn09RZQb6o6-fh-VclrrE3Q2uRbxi-Nb3boBJN4qkAh8KZN9bH_sknGV30QmMubm/exec'; // ¡REEMPLAZA ESTA URL!
 
-                <button type="submit" class="btn btn-success" id="btnReservar">Reservar</button>
-            </form>
-        </div>
-    </div>
+        const OBRA_FILTRO_NOMBRE = 'La Jirafa'; 
+        const MANAGER_WHATSAPP_NUMBER = '5493492594940'; 
 
-    <script>
-        // *** CONFIGURACIÓN Y VARIABLES GLOBALES ***
-        const URL_PARAM_OBRA = new URLSearchParams(window.location.search).get('obra') || 'La Jirafa'; // Obra por defecto
-        let timerInterval;
-        let cuposActuales = {};
+        let timerTimeout; 
+        let todosLosCupos = {}; 
 
-        // *** FUNCIONES DE UTILIDAD Y UI ***
+        // -------------------------------------------------------------------------
+        // FUNCIONES DE UTILDAD
+        // -------------------------------------------------------------------------
+        function isNumberKey(evt) {
+            const charCode = (evt.which) ? evt.which : event.keyCode;
+            if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+                return false;
+            }
+            return true;
+        }
 
-        function mostrarMensaje(id, mensaje, tipo) {
-            const element = document.getElementById(id);
-            element.innerHTML = mensaje;
-            element.className = 'alert ' + (tipo === 'exito' ? 'alert-success' : 'alert-danger');
-            element.style.display = 'block';
-            setTimeout(() => { element.style.display = 'none'; }, 6000);
-        }
+        function mostrarMensaje(texto, tipo = 'error') {
+            const messageDiv = document.getElementById('message');
+            
+            if (!texto) {
+                messageDiv.style.display = 'none';
+                return;
+            }
 
-        function setPrecioDisplay(precio, loading = false) {
-            const precioValor = document.getElementById('precioValor');
-            const precioLoading = document.getElementById('precioLoading');
-            
-            if (loading) {
-                precioValor.style.display = 'none';
-                precioLoading.style.display = 'block';
-                precioValor.textContent = '...';
-            } else {
-                precioValor.textContent = `$${parseFloat(precio).toLocaleString('es-AR', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
-                precioValor.style.display = 'block';
-                precioLoading.style.display = 'none';
-            }
-        }
+            messageDiv.textContent = texto;
+            messageDiv.style.display = 'block';
+            messageDiv.className = 'message'; 
 
-        function setCupoDisplay(cupo) {
-            const cupoDisponible = document.getElementById('cupoDisponible');
-            cupoDisponible.textContent = cupo !== null ? `${cupo} disp.` : '...';
-        }
-        
-        // ** Contador de tiempo (Reiniciar al cargar la página) **
-        function iniciarContador(minutos = 5) {
-            clearInterval(timerInterval);
-            let tiempoRestante = minutos * 60;
-            const display = document.getElementById('tiempoRestante');
+            if (tipo === 'exito') {
+                messageDiv.style.backgroundColor = '#d4edda'; 
+                messageDiv.style.color = '#155724'; 
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 8000); 
+            } else if (tipo === 'error') {
+                messageDiv.style.backgroundColor = '#f8d7da';
+                messageDiv.style.color = '#721c24';
+                messageDiv.style.fontWeight = 'bold';
+                messageDiv.style.textTransform = 'uppercase';
+            }
+        }
+        
+        // -------------------------------------------------------------------------
+        // FUNCIONES DE CONSULTA
+        // -------------------------------------------------------------------------
 
-            timerInterval = setInterval(() => {
-                const minutos = parseInt(tiempoRestante / 60, 10);
-                const segundos = parseInt(tiempoRestante % 60, 10);
+        /* CARGAR NOMBRE DE OBRA (Solo el título) */
+        async function cargarNombreObra() {
+            const tituloObra = document.getElementById('tituloObra');
+            
+            try {
+                const url = EXEC_URL + '?accion=obtenerNombre&obra=' + encodeURIComponent(OBRA_FILTRO_NOMBRE);
+                const response = await fetch(url); 
+                const data = await response.json();
+                
+                if (data.status === 'OK' && data.nombre) {
+                    const nuevoNombre = 'Reserva Entradas - ' + data.nombre;
+                    document.title = nuevoNombre;
+                    tituloObra.textContent = nuevoNombre;
+                } else {
+                    document.title = 'Reserva de Entradas';
+                    tituloObra.textContent = 'Reserva de Entradas';
+                }
+            } catch(err) {
+                console.error('Error FATAL al cargar nombre de obra:', err);
+            }
+        }
 
-                display.textContent = 
-                    (minutos < 10 ? "0" + minutos : minutos) + ":" + 
-                    (segundos < 10 ? "0" + segundos : segundos);
+        /* ✅ NUEVA FUNCIÓN: ACTUALIZA EL PRECIO EN PANTALLA SEGÚN EL ID DEL EVENTO */
+        async function actualizarPrecioPorId(idEvento) {
+            const precioMontoDiv = document.getElementById('precioMonto');
+            precioMontoDiv.textContent = '...'; 
 
-                if (--tiempoRestante < 0) {
-                    tiempoRestante = 0;
-                    clearInterval(timerInterval);
-                    mostrarMensaje('mensajeError', 'El tiempo de la sesión expiró. Recarga la página.', 'error');
-                    document.getElementById('btnReservar').disabled = true;
-                }
-            }, 1000);
-        }
+            try {
+                const url = EXEC_URL + '?accion=obtenerPrecioPorId&id=' + encodeURIComponent(idEvento);
+                const response = await fetch(url);
+                const data = await response.json();
 
-
-        // *** COMUNICACIÓN CON APPS SCRIPT ***
-
-        /**
-         * Llama al Apps Script con una acción y parámetros.
-         */
-        async function llamarAppsScript(accion, params = {}) {
-            const url = '<?= ScriptApp.getService().getUrl() ?>';
-            const query = new URLSearchParams({ accion, ...params }).toString();
-            try {
-                const response = await fetch(`${url}?${query}`);
-                return response.json();
-            } catch (error) {
-                console.error('Error al comunicarse con Apps Script:', error);
-                mostrarMensaje('mensajeError', 'Error de conexión con el servidor. Intenta más tarde.', 'error');
-                return { status: 'ERROR', message: 'Error de red.' };
-            }
-        }
-
-        /**
-         * 1. Carga las opciones de fecha y el título de la obra.
-         * 2. Consulta el cupo inicial.
-         * 3. Llama a obtenerPrecio para el ID seleccionado.
-         */
-        async function obtenerDetallesObra() {
-            document.getElementById('loadingOverlay').style.display = 'flex';
-            const fechaSelect = document.getElementById('fecha');
-            
-            // 1. Obtener Opciones y Nombre
-            const [opciones, nombreObra] = await Promise.all([
-                llamarAppsScript('obtenerOpciones', { obra: URL_PARAM_OBRA }),
-                llamarAppsScript('obtenerNombre', { obra: URL_PARAM_OBRA })
-            ]);
-
-            document.getElementById('obraTitulo').textContent = `Reserva Entradas - ${nombreObra.nombre}`;
-            
-            // Rellenar el Select
-            fechaSelect.innerHTML = '';
-            opciones.forEach(opcion => {
-                const option = document.createElement('option');
-                option.value = opcion.id;
-                option.textContent = opcion.texto;
-                fechaSelect.appendChild(option);
-            });
-            fechaSelect.disabled = opciones.length === 0;
-
-            if (opciones.length === 0) {
-                mostrarMensaje('mensajeError', 'No hay funciones disponibles para esta obra.', 'error');
-                document.getElementById('btnReservar').disabled = true;
-            }
-
-            // 2. Consultar Cupo
-            const cupos = await llamarAppsScript('consultarCupo');
-            cuposActuales = cupos.cupos || {};
-            
-            // 3. Cargar Precio y Cupo para la primera opción
-            if (fechaSelect.value) {
-                await actualizarInfoEvento(fechaSelect.value);
-            } else {
-                setPrecioDisplay('...');
-                setCupoDisplay(0);
-            }
-            
-            document.getElementById('loadingOverlay').style.display = 'none';
-        }
-        
-        /**
-         * Obtiene el precio unitario y actualiza el cupo para un evento (ID).
-         */
-        async function actualizarInfoEvento(eventoId) {
-            if (!eventoId) return;
-
-            setPrecioDisplay(null, true); // Mostrar cargando
-
-            // 1. Obtener Precio
-            const resultadoPrecio = await llamarAppsScript('obtenerPrecioPorId', { id: eventoId });
-            
-            if (resultadoPrecio.status === 'OK') {
-                setPrecioDisplay(resultadoPrecio.precio);
-            } else {
-                setPrecioDisplay('Error');
-                console.error('Error al obtener precio:', resultadoPrecio.message);
-            }
-
-            // 2. Actualizar Cupo
-            const cupo = cuposActuales[eventoId] || 0;
-            setCupoDisplay(cupo);
-        }
+                if (data.status === 'OK' && data.precio !== undefined) {
+                    // Formatea el precio para mostrarlo con el signo $
+                    precioMontoDiv.textContent = `$${parseFloat(data.precio).toLocaleString('es-AR')}`;
+                } else {
+                    precioMontoDiv.textContent = 'Error';
+                }
+            } catch (err) {
+                console.error('Error al obtener precio:', err);
+                precioMontoDiv.textContent = 'Error';
+            }
+        }
 
 
-        /**
-         * Maneja el envío del formulario de reserva.
-         */
-        async function manejarReserva(event) {
-            event.preventDefault();
-            document.getElementById('btnReservar').disabled = true;
-            document.getElementById('loadingOverlay').style.display = 'flex';
-            
-            const form = event.target;
-            const data = new FormData(form);
-            const params = {};
-            for (let [key, value] of data.entries()) {
-                params[key] = value;
-            }
-            params.accion = 'reservar';
+        /* TEMPORIZADOR */
+        function startTimer() {
+            let duration = 5 * 60; 
+            const timerDiv = document.getElementById('timerDiv');
 
-            const resultado = await llamarAppsScript('reservar', params);
-            
-            document.getElementById('loadingOverlay').style.display = 'none';
+            function updateTimer() {
+                const minutes = parseInt(duration / 60, 10);
+                const seconds = parseInt(duration % 60, 10);
 
-            if (resultado.status === 'OK') {
-                const mensaje = `¡Reserva Exitosa! ID: <strong>${resultado.id}</strong>. Debes pagar <strong>$${resultado.montoTotal.toLocaleString('es-AR')}</strong>. <a href="${resultado.linkPago}" target="_blank" class="alert-link">Haz clic aquí para pagar ahora.</a>`;
-                mostrarMensaje('mensajeExito', mensaje, 'exito');
-                
-                // Actualizar UI después de la reserva exitosa
-                iniciarContador(5); // Reiniciar timer
-                
-                // Actualizar cupo local y en la UI
-                cuposActuales[params.fecha] = resultado.cupoRestante;
-                setCupoDisplay(resultado.cupoRestante);
-                
-                // Limpiar solo campos no esenciales
-                form.elements['cantidad'].value = 1;
+                const displayMinutes = minutes < 10 ? "0" + minutes : minutes;
+                const displaySeconds = seconds < 10 ? "0" + seconds : seconds;
 
-            } else {
-                mostrarMensaje('mensajeError', `Error: ${resultado.message}`, 'error');
-            }
-            
-            document.getElementById('btnReservar').disabled = false;
-        }
+                timerDiv.textContent = "⏱️ " + displayMinutes + ":" + displaySeconds; 
+
+                if (--duration < 0) {
+                    clearInterval(timerTimeout); 
+                    document.getElementById('btnReservar').disabled = true;
+                    timerDiv.textContent = "⏱️ 00:00";
+                }
+            }
+            
+            if (timerTimeout) clearInterval(timerTimeout); 
+            timerTimeout = setInterval(updateTimer, 1000);
+        }
+
+        /* CARGAR OPCIONES DEL EVENTO */
+        function cargarOpcionesEventos(opciones) {
+            const select = document.getElementById('fecha');
+            select.innerHTML = '';
+            const cupoDiv = document.getElementById('cupoDiv');
+
+            if (opciones.length === 0) {
+                const opt = document.createElement('option');
+                opt.textContent = "No hay eventos disponibles";
+                select.appendChild(opt);
+                cupoDiv.textContent = 'No hay eventos configurados.';
+                return;
+            }
+
+            opciones.forEach(opcion => {
+                const opt = document.createElement('option');
+                opt.value = opcion.id;
+
+                const cupo = todosLosCupos[opcion.id];
+
+                if (cupo === 0) {
+                    opt.textContent = opcion.texto + " (Agotado)";
+                    opt.style.color = "#b5b5b5"; 
+                } else {
+                    opt.textContent = opcion.texto;
+                    opt.style.color = "black";
+                }
+
+                select.appendChild(opt);
+            });
+            
+            // Cargar datos del primer evento después de cargar las opciones
+            if (select.value) {
+                mostrarCupoSeleccionado(); 
+                actualizarPrecioPorId(select.value); // <--- Llama para el primer evento
+            }
+        }
 
 
-        // *** INICIALIZACIÓN Y LISTENERS ***
+        /* ACTUALIZAR CUPO (Llamada al servidor) */
+        async function actualizarCupo() {
+            const cupoDiv = document.getElementById('cupoDiv');
+            cupoDiv.textContent = 'Buscando...';
+            
+            try {
+                const response = await fetch(EXEC_URL + '?accion=consultarCupo'); 
+                const data = await response.json();
+                
+                if (data.status === 'OK' && data.cupos) {
+                    todosLosCupos = data.cupos; 
+                    
+                    // Recarga las opciones de eventos para reflejar los cupos
+                    fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTRO_NOMBRE))
+                        .then(response => response.json())
+                        .then(data => cargarOpcionesEventos(data))
+                        .catch(err => console.error('Error al recargar eventos:', err));
+                
+                } else {
+                    cupoDiv.textContent = 'Error al verificar cupo.';
+                }
+            } catch(err) {
+                console.error('Error al consultar cupo:', err);
+                cupoDiv.textContent = 'Error de conexión.';
+            }
+        }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // Iniciar el contador al cargar la página
-            iniciarContador(5); 
+        /* MOSTRAR CUPO SELECCIONADO (Columna 2) */
+        function mostrarCupoSeleccionado() {
+            const selectFecha = document.getElementById('fecha');
+            const idSeleccionado = selectFecha.value;
+            const cupoDiv = document.getElementById('cupoDiv');
 
-            // Cargar datos iniciales
-            obtenerDetallesObra();
+            // ✅ IMPORTANTE: Se llama a la nueva función de precio aquí
+            actualizarPrecioPorId(idSeleccionado);
 
-            // Listener para el formulario de reserva
-            document.getElementById('reservaForm').addEventListener('submit', manejarReserva);
+            if (todosLosCupos.hasOwnProperty(idSeleccionado)) {
+                const cupoRestante = todosLosCupos[idSeleccionado];
 
-            // Listener para cuando se cambia la fecha del evento
-            document.getElementById('fecha').addEventListener('change', (event) => {
-                actualizarInfoEvento(event.target.value);
-            });
-        });
+                if (cupoRestante === 0) {
+                    cupoDiv.textContent = '🎟️ AGOTADO';
+                    cupoDiv.classList.add('agotado-rojo');
+                } else {
+                    cupoDiv.textContent = `🎟️ ${cupoRestante} disp.`;
+                    cupoDiv.classList.remove('agotado-rojo');
+                }
 
-    </script>
+                // Actualiza el texto de las opciones para reflejar "Agotado"
+                const opciones = selectFecha.options;
+                for (let opt of opciones) {
+                    const cupo = todosLosCupos[opt.value];
+
+                    if (cupo === 0) {
+                        opt.textContent = opt.textContent.split(" (")[0] + " (Agotado)";
+                        opt.style.color = "#b5b5b5"; 
+                    } else {
+                        opt.textContent = opt.textContent.split(" (")[0];
+                        opt.style.color = "black";
+                    }
+                }
+            } else {
+                cupoDiv.textContent = 'Selecciona una función.';
+            }
+        }
+
+        /* BOTON RESERVA */
+        document.getElementById('btnReservar').onclick = async function() {
+            mostrarMensaje(''); 
+
+            const nombre = document.getElementById('nombre').value.trim();
+            const telefonoCliente = document.getElementById('telefono').value.trim().replace(/\D/g,''); 
+            const cantidad = parseInt(document.getElementById('cantidad').value);
+            const fecha = document.getElementById('fecha').value; 
+
+            if (!nombre || !telefonoCliente || !cantidad || !fecha) {
+                mostrarMensaje('💡 Completa todos los campos.', 'error');
+                return;
+            }
+
+            // VALIDACIÓN HONEYPOT (ANTI-SPAM)
+            const apellidoBot = document.getElementById('apellidoBot').value.trim();
+            if (apellidoBot.length > 0) {
+                mostrarMensaje('❌ Error de validación de formulario.', 'error');
+                return; 
+            }
+
+            const formData = new URLSearchParams();
+            formData.append('accion', 'reservar');
+            formData.append('nombre', nombre);
+            formData.append('telefono', telefonoCliente);
+            formData.append('cantidad', cantidad);
+            formData.append('fecha', fecha); 
+
+            this.disabled = true;
+            this.classList.add('loading');
+            clearInterval(timerTimeout); 
+
+            try {
+                const response = await fetch(EXEC_URL, { method: 'POST', body: formData }); 
+                const data = await response.json();
+
+                if (data.status === 'OK') {
+                    mostrarMensaje(`✅ ¡RESERVA EXITOSA! ID: ${data.id}. Total: $${data.montoTotal.toLocaleString('es-AR')}. Redirigiendo a WhatsApp...`, 'exito');
+                    
+                    const mensajeWhatsApp = [
+                        `¡Hola! Mi reserva es la ID: *${data.id}*.`,
+                        `Confirmo la reserva de *${cantidad}* entradas.`,
+                        `Mi teléfono (Cliente) es: *${telefonoCliente}*`, 
+                        `El monto total es de *$${data.montoTotal.toLocaleString('es-AR')}*.`,
+                        ``,
+                        `⭐ *LINK DE PAGO MERCADO PAGO:*`,
+                        `${data.linkPago}`, 
+                        ``,
+                        `*IMPORTANTE:* Si el pago no se realiza en 5 minutos, la reserva puede cancelarse.`
+                    ].join('\n'); 
+
+                    const mensajeURL = encodeURIComponent(mensajeWhatsApp);
+                    
+                    window.open(`https://wa.me/${MANAGER_WHATSAPP_NUMBER}?text=${mensajeURL}`, '_blank');
+                    
+                    // Actualiza el cupo después de la reserva exitosa
+                    actualizarCupo();
+                    startTimer(); // Reinicia el timer para una nueva sesión
+
+                } else {
+                    mostrarMensaje('❌ ' + data.message, 'error');
+                    startTimer(); 
+                }
+                
+            } catch(err) {
+                mostrarMensaje('❌ Error de conexión o red: ' + err.message, 'error');
+                startTimer(); 
+            }
+
+            this.disabled = false;
+            this.classList.remove('loading');
+        };
+
+
+        document.getElementById('fecha').addEventListener('change', mostrarCupoSeleccionado);
+
+
+        // *** 4. INICIAR LAS FUNCIONES AL CARGAR ***
+        cargarNombreObra(); 
+        startTimer(); 
+        fetch(EXEC_URL + '?accion=consultarCupo') // Primero consultamos los cupos
+            .then(response => response.json())
+            .then(data => {
+                todosLosCupos = data.cupos || {};
+                return fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTRO_NOMBRE));
+            })
+            .then(response => response.json())
+            .then(data => cargarOpcionesEventos(data))
+            .catch(err => {
+                console.error('Error FATAL al cargar eventos:', err);
+                document.getElementById('cupoDiv').textContent = 'Error crítico al cargar eventos. Verifique la URL de Apps Script.';
+            });
+    </script>
 </body>
 </html>
