@@ -212,7 +212,8 @@
             }
         }
 
-        /* TEMPORIZADOR (Columna 3) */
+        
+       /* TEMPORIZADOR (Columna 3) */
         function startTimer() {
             let duration = 5 * 60; // 5 minutos
             const timerDiv = document.getElementById('timerDiv');
@@ -230,6 +231,9 @@
                     clearInterval(timerTimeout); 
                     document.getElementById('btnReservar').disabled = true;
                     timerDiv.textContent = "⏱️ 00:00";
+                    
+                    // 💡 ACCIÓN A AÑADIR: Muestra un mensaje de expiración
+                    mostrarMensaje('⏰ Tiempo agotado. Debes actualizar la página para iniciar una nueva reserva.', 'error'); 
                 }
             }
             
@@ -455,4 +459,5 @@
     </script>
 </body>
 </html>
+
 
