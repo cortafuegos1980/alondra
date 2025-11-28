@@ -177,6 +177,7 @@
             <div class="form-group">
                 <label for="fecha">Fecha del Evento:</label>
                 <select id="fecha" required>
+                    <option value="" disabled selected>Cargando opciones...</option>
                 </select>
             </div>
 
@@ -191,7 +192,7 @@
     
     <script>
         // *** 1. CONFIGURACIÓN CRUCIAL ***
-        // 💡 1. URL DE APPS SCRIPT
+        // 💡 1. URL DE APPS SCRIPT - DEBES REEMPLAZAR ESTO CON TU URL FINAL DE DESPLIEGUE
         const EXEC_URL = 'https://script.google.com/macros/s/AKfycbxouqas6Wvyf5gWWtPjHnUSfMcqgr__uBYah00v1tVhsqDAVgTR_dRZ5r5bBG_Fjm7e/exec'; 
         
         const OBRA_FILTRO_NOMBRE = 'La Jirafa'; 
@@ -255,13 +256,19 @@
             }
         }
         
-        /* Función de utilidad para peticiones GET */
-        async function fetchData(action, params = {}) {
+        /* Función de utilidad para peticiones GET y POST */
+        async function fetchData(action, params = {}, method = 'GET', body = null) {
             const query = new URLSearchParams({ accion: action, ...params }).toString();
-            const url = `${EXEC_URL}?${query}`;
+            let url = `${EXEC_URL}?${query}`;
+            let options = { method: method };
+
+            if (method === 'POST' && body) {
+                options.body = body;
+                url = EXEC_URL; // POST bodies should not use query string, parameters go in body
+            }
             
             try {
-                const response = await fetch(url); 
+                const response = await fetch(url, options); 
                 if (!response.ok) { 
                     throw new Error(`Error HTTP: ${response.status} al obtener ${action}`); 
                 }
@@ -327,19 +334,21 @@
             const { fecha: select, cupoDiv } = DOM_ELEMENTS;
             
             if (opciones.length === 0) {
-                select.innerHTML = '<option>No hay eventos disponibles</option>';
+                select.innerHTML = '<option value="" disabled selected>No hay eventos disponibles</option>';
                 cupoDiv.textContent = 'No hay eventos configurados.';
                 return;
             }
+            // Agrega la opción por defecto
+            let opcionesHTML = '<option value="" disabled selected>Selecciona una fecha y hora</option>';
 
             // 🌟 MEJORA: Construcción de opciones con map/join para un mejor rendimiento DOM
-            const opcionesHTML = opciones.map(opcion => 
+            opcionesHTML += opciones.map(opcion => 
                 `<option value="${opcion.id}">${opcion.texto}</option>`
             ).join('');
 
             select.innerHTML = opcionesHTML;
             
-            // Llamar a actualizar cupo para el primer elemento
+            // Llamar a actualizar cupo para la primera opción cargada
             actualizarCupo().then(mostrarCupoSeleccionado);
         }
 
@@ -361,12 +370,13 @@
             const { fecha: selectFecha, cupoDiv, precioDiv, btnReservar, timerDiv } = DOM_ELEMENTS;
             const idSeleccionado = selectFecha.value;
             
-            
+            // Si el temporizador ha expirado, deshabilitamos la reserva
             if (timerDiv.textContent.includes('00:00')) {
                 btnReservar.disabled = true;
                 return; 
             }
             
+            // Si no hay evento seleccionado
             if (!idSeleccionado || idSeleccionado === "") {
                 cupoDiv.textContent = 'Selecciona una función.';
                 precioDiv.textContent = '...';
@@ -377,6 +387,7 @@
             if (todosLosCupos.hasOwnProperty(idSeleccionado)) {
                 const cupoRestante = todosLosCupos[idSeleccionado];
 
+                // 1. Actualizar el indicador de Cupo
                 if (cupoRestante === 0) {
                     cupoDiv.textContent = '🎟️ AGOTADO';
                     cupoDiv.classList.add('agotado-rojo');
@@ -387,7 +398,7 @@
                     btnReservar.disabled = false; 
                 }
 
-                // Actualización del SELECT (Lógica refactorizada)
+                // 2. Actualización de las opciones del SELECT (para mostrar "Agotado")
                 Array.from(selectFecha.options).forEach(opt => {
                     if (todosLosCupos.hasOwnProperty(opt.value)) {
                         const cupo = todosLosCupos[opt.value];
@@ -399,3 +410,146 @@
                         } else {
                             opt.textContent = textoLimpio; 
                             opt.style.color = "black";
+                        }
+                    }
+                });
+                
+                // 3. Actualizar PRECIO
+                precioDiv.textContent = '...';
+                const dataPrecio = await fetchData('obtenerPrecio', { idEvento: idSeleccionado });
+
+                if (dataPrecio.status === 'OK' && dataPrecio.precio) {
+                    precioDiv.textContent = `$${dataPrecio.precio}`;
+                } else {
+                    precioDiv.textContent = 'N/A';
+                }
+                
+            } else {
+                cupoDiv.textContent = 'Error: ID no encontrado.';
+                precioDiv.textContent = 'N/A';
+                btnReservar.disabled = true; 
+            }
+        }
+
+
+        // *** LÓGICA DE ENVÍO Y MANEJO DE EVENTOS ***
+        
+        DOM_ELEMENTS.formReserva.addEventListener('submit', async function(event) {
+            event.preventDefault(); 
+            
+            mostrarMensaje(''); 
+
+            const { btnReservar: btn, nombre, telefono, cantidad, fecha, apellidoBot } = DOM_ELEMENTS;
+
+            const nombreVal = nombre.value.trim();
+            const telefonoCliente = telefono.value.trim().replace(/\D/g,''); 
+            const cantidadVal = parseInt(cantidad.value);
+            const fechaVal = fecha.value; 
+
+            // ** VALIDACIONES FINALES **
+            if (!nombreVal || !telefonoCliente || !cantidadVal || !fechaVal) {
+                mostrarMensaje('💡 Completa todos los campos.', 'error');
+                return;
+            }
+            
+            if (telefonoCliente.length < MIN_CELULAR_LENGTH || telefonoCliente.length > MAX_CELULAR_LENGTH) {
+                mostrarMensaje(`El número de WhatsApp debe tener entre ${MIN_CELULAR_LENGTH} y ${MAX_CELULAR_LENGTH} dígitos (solo números).`, 'error');
+                return;
+            }
+
+            if (btn.disabled) {
+                mostrarMensaje('⏰ Tiempo de reserva agotado o evento sin cupo. Actualiza la página para comenzar de nuevo.', 'error');
+                return; 
+            }
+
+            if (apellidoBot.value.trim().length > 0) {
+                mostrarMensaje('❌ Error de validación de formulario.', 'error');
+                return; 
+            }
+
+            const cupoActual = todosLosCupos[fechaVal] || 0;
+            if (cantidadVal > cupoActual) {
+                mostrarMensaje(`Solo quedan ${cupoActual} entradas. Ajusta la cantidad.`, 'error');
+                return;
+            }
+            // ** FIN VALIDACIONES **
+
+            const formData = new URLSearchParams();
+            formData.append('accion', 'reservar');
+            formData.append('nombre', nombreVal);
+            formData.append('telefono', telefonoCliente);
+            formData.append('cantidad', cantidadVal);
+            formData.append('fecha', fechaVal); 
+
+            btn.disabled = true;
+            btn.classList.add('loading');
+            clearInterval(timerTimeout); 
+
+
+            try {
+                // Usamos el método POST y el cuerpo FormData para la acción 'reservar'
+                const data = await fetchData('reservar', {}, 'POST', formData);
+
+                if (data.status === 'OK') {
+                    mostrarMensaje(`✅ ¡RESERVA EXITOSA! ID: ${data.id}. Total: $${data.montoTotal}. Redirigiendo a WhatsApp...`, 'exito');
+                    
+                    const mensajeWhatsApp = [
+                        `¡Hola! Mi reserva es la ID: *${data.id}*.`,
+                        `Confirmo la reserva de *${cantidadVal}* entradas.`,
+                        `Mi teléfono (Cliente) es: *${telefonoCliente}*`, 
+                        `El monto total es de *$${data.montoTotal}*.`,
+                        ``,
+                        `⭐ *LINK DE PAGO MERCADO PAGO:*`,
+                        `${data.linkPago}`, 
+                        ``,
+                        `*IMPORTANTE:* Si el pago no se realiza en 5 minutos, la reserva puede cancelarse.`
+                    ].join('\n'); 
+
+                    const mensajeURL = encodeURIComponent(mensajeWhatsApp);
+                    
+                    window.open(`https://wa.me/${MANAGER_WHATSAPP_NUMBER}?text=${mensajeURL}`, '_blank');
+                    
+                    actualizarCupo().then(mostrarCupoSeleccionado);
+                    
+                    btn.disabled = true; 
+                    btn.classList.remove('loading');
+                    
+                } else {
+                    mostrarMensaje('❌ ' + (data.message || 'Error desconocido del servidor.'), 'error');
+                    btn.disabled = false;
+                    btn.classList.remove('loading');
+                    startTimer(); 
+                }
+                
+            } catch(err) {
+                mostrarMensaje('❌ Error de conexión o red: ' + err.message, 'error');
+                btn.disabled = false;
+                btn.classList.remove('loading');
+                startTimer(); 
+            }
+        });
+
+
+        DOM_ELEMENTS.fecha.addEventListener('change', mostrarCupoSeleccionado);
+
+
+        // *** 4. INICIAR LAS FUNCIONES AL CARGAR (Solo una vez) ***
+        cargarNombreObra(); 
+        startTimer(); 
+        
+        // Carga inicial de eventos: Espera { status: 'OK', eventos: [...] }
+        fetchData('obtenerOpciones', { obra: OBRA_FILTRO_NOMBRE })
+            .then(data => {
+                if (data.status === 'OK' && Array.isArray(data.eventos)) {
+                    cargarOpcionesEventos(data.eventos);
+                } else {
+                    DOM_ELEMENTS.cupoDiv.textContent = 'Error al cargar opciones de eventos.';
+                }
+            })
+            .catch(err => {
+                console.error('Error FATAL al cargar eventos:', err);
+                DOM_ELEMENTS.cupoDiv.textContent = 'Error crítico al cargar eventos. Verifique la URL de Apps Script.';
+            });
+    </script>
+</body>
+</html>
