@@ -14,7 +14,7 @@
         
         /* Estilo de validación */
         input:invalid:not(:focus), select:invalid:not(:focus) { 
-            border: 2px solid #D32F2F; /* Borde más visible */
+            border: 2px solid #D32F2F; /* Rojo de error */
         }
         input, select { 
             width: 100%; 
@@ -53,6 +53,10 @@
             font-size: 0.9em;
             font-weight: 500;
         }
+        /* Ajuste para la caja central del cupo */
+        #caja-cupo {
+            flex-basis: calc(33.33% - 10px);
+        }
 
         .precio-label { font-size: 0.9em; display:block; color: #666; }
         .precio-monto {
@@ -163,7 +167,7 @@
                     minlength="8" 
                     maxlength="15" 
                     pattern="[0-9]{8,15}" 
-                    title="Ingresa entre 8 y 15 dígitos numéricos sin 0 ni 15."
+                    title="Ingresa entre 8 y 15 dígitos numéricos, solo el número de celular."
                     data-min-length="8"
                     data-max-length="15"
                 >
@@ -182,7 +186,7 @@
             </div>
 
             <div class="form-group honeypot">
-                <label for="apellidoBot">No llenar este campo:</label>
+                <label for="apellidoBot">No llenar este campo (Anti-Spam):</label>
                 <input type="text" id="apellidoBot" name="apellidoBot">
             </div>
 
@@ -191,8 +195,8 @@
     </div>
     
     <script>
-        // *** 1. CONFIGURACIÓN CRUCIAL ***
-        // 💡 1. URL DE APPS SCRIPT - DEBES REEMPLAZAR ESTO CON TU URL FINAL DE DESPLIEGUE
+        // *** 1. CONFIGURACIÓN CRUCIAL - ¡DEBES CAMBIAR ESTA URL! ***
+        // 🛑 REEMPLAZA esta URL de ejemplo por la URL de tu Implementación Web Final.
         const EXEC_URL = 'https://script.google.com/macros/s/AKfycbxouqas6Wvyf5gWWtPjHnUSfMcqgr__uBYah00v1tVhsqDAVgTR_dRZ5r5bBG_Fjm7e/exec'; 
         
         const OBRA_FILTRO_NOMBRE = 'La Jirafa'; 
@@ -217,14 +221,11 @@
             apellidoBot: document.getElementById('apellidoBot')
         };
         
-        // 🌟 MEJORA: Lee las configuraciones de longitud desde el data-attribute del input
         const MIN_CELULAR_LENGTH = parseInt(DOM_ELEMENTS.telefono.dataset.minLength, 10) || 8;
         const MAX_CELULAR_LENGTH = parseInt(DOM_ELEMENTS.telefono.dataset.maxLength, 10) || 15;
 
 
-        // -------------------------------------------------------------------------
         // VALIDACIÓN ESTRICTA DE WHATSAPP (Solo números)
-        // -------------------------------------------------------------------------
         function isNumberKey(evt) {
             const charCode = (evt.which) ? evt.which : event.keyCode;
             return !(charCode > 31 && (charCode < 48 || charCode > 57));
@@ -235,16 +236,13 @@
         function mostrarMensaje(texto, tipo = 'error') {
             const messageDiv = DOM_ELEMENTS.message;
             
-            if (!texto) {
-                messageDiv.style.display = 'none';
-                messageDiv.className = 'message'; 
-                return;
-            }
+            messageDiv.style.display = 'none';
+            messageDiv.className = 'message'; 
+            if (!texto) return;
 
             messageDiv.textContent = texto;
             messageDiv.style.display = 'block';
-            messageDiv.className = 'message'; 
-
+            
             if (tipo === 'exito') {
                 messageDiv.classList.add('message-success');
                 setTimeout(() => {
@@ -264,13 +262,21 @@
 
             if (method === 'POST' && body) {
                 options.body = body;
-                url = EXEC_URL; // POST bodies should not use query string, parameters go in body
+                url = EXEC_URL; 
             }
             
             try {
                 const response = await fetch(url, options); 
-                if (!response.ok) { 
-                    throw new Error(`Error HTTP: ${response.status} al obtener ${action}`); 
+                // 🛑 CORRECCIÓN: Manejo de errores HTTP antes de intentar parsear JSON
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`Error HTTP: ${response.status} en ${action}. Respuesta: ${errorText}`);
+                    // Intentamos parsear JSON solo si el Content-Type lo indica
+                    if (response.headers.get('Content-Type')?.includes('application/json')) {
+                        const errorData = JSON.parse(errorText);
+                        throw new Error(errorData.message || `Error HTTP ${response.status} sin mensaje detallado.`);
+                    }
+                    throw new Error(`Error de servidor (${response.status}). Asegura que la URL de EXEC_URL es la correcta y está implementada.`); 
                 }
                 return await response.json();
             } catch(err) {
@@ -280,7 +286,7 @@
         }
 
 
-        /* CARGAR NOMBRE DE OBRA (Simplificado con fetchData) */
+        /* CARGAR NOMBRE DE OBRA */
         async function cargarNombreObra() {
             const data = await fetchData('obtenerNombre', { obra: OBRA_FILTRO_NOMBRE });
             
@@ -291,6 +297,7 @@
             } else {
                 document.title = 'Reserva de Entradas';
                 DOM_ELEMENTS.tituloObra.textContent = 'Reserva de Entradas';
+                console.error('Error al cargar nombre de la obra. Usando predeterminado.');
             }
         }
 
@@ -300,13 +307,11 @@
             let duration = 5 * 60; 
             const { timerDiv, btnReservar } = DOM_ELEMENTS;
             
-            // Lógica inicial del botón
-            if (btnReservar) {
-                btnReservar.disabled = false;
-                btnReservar.classList.remove('loading');
-            }
-
             if (timerTimeout) clearInterval(timerTimeout); 
+            
+            // Habilitar botón al inicio del timer (si hay selección y cupo)
+            btnReservar.disabled = false;
+            btnReservar.classList.remove('loading');
 
             function updateTimer() {
                 const minutes = parseInt(duration / 60, 10);
@@ -319,9 +324,9 @@
 
                 if (--duration < 0) {
                     clearInterval(timerTimeout); 
-                    if (btnReservar) btnReservar.disabled = true; 
+                    btnReservar.disabled = true; 
                     timerDiv.textContent = "⏱️ 00:00";
-                    mostrarMensaje('⏰ Tiempo agotado. Debes actualizar la página para iniciar una nueva reserva.', 'error'); 
+                    mostrarMensaje('⏰ TIEMPO AGOTADO. Debes actualizar la página para iniciar una nueva reserva.', 'error'); 
                 }
             }
             
@@ -329,26 +334,26 @@
             timerTimeout = setInterval(updateTimer, 1000);
         }
         
-        /* CARGAR OPCIONES DEL EVENTO (Optimizado) */
+        /* CARGAR OPCIONES DEL EVENTO */
         function cargarOpcionesEventos(opciones) {
-            const { fecha: select, cupoDiv } = DOM_ELEMENTS;
+            const { fecha: select, cupoDiv, btnReservar } = DOM_ELEMENTS;
             
-            if (opciones.length === 0) {
+            if (!opciones || opciones.length === 0) {
                 select.innerHTML = '<option value="" disabled selected>No hay eventos disponibles</option>';
-                cupoDiv.textContent = 'No hay eventos configurados.';
+                cupoDiv.textContent = '⚠️ Sin funciones.';
+                btnReservar.disabled = true;
                 return;
             }
             // Agrega la opción por defecto
             let opcionesHTML = '<option value="" disabled selected>Selecciona una fecha y hora</option>';
 
-            // 🌟 MEJORA: Construcción de opciones con map/join para un mejor rendimiento DOM
             opcionesHTML += opciones.map(opcion => 
                 `<option value="${opcion.id}">${opcion.texto}</option>`
             ).join('');
 
             select.innerHTML = opcionesHTML;
             
-            // Llamar a actualizar cupo para la primera opción cargada
+            // Actualizar cupo y mostrar el estado inicial
             actualizarCupo().then(mostrarCupoSeleccionado);
         }
 
@@ -360,34 +365,47 @@
             if (data.status === 'OK' && data.cupos) {
                 todosLosCupos = data.cupos; 
             } else {
-                DOM_ELEMENTS.cupoDiv.textContent = 'Error al verificar cupo.';
+                DOM_ELEMENTS.cupoDiv.textContent = '❌ Error al verificar cupo.';
+                console.error('Error de Cupo:', data.message);
             }
         }
 
 
-        /* MOSTRAR CUPO Y PRECIO SELECCIONADO (Optimizado y Limpio) */
+        /* MOSTRAR CUPO Y PRECIO SELECCIONADO */
         async function mostrarCupoSeleccionado() { 
             const { fecha: selectFecha, cupoDiv, precioDiv, btnReservar, timerDiv } = DOM_ELEMENTS;
             const idSeleccionado = selectFecha.value;
             
-            // Si el temporizador ha expirado, deshabilitamos la reserva
+            // 1. Pre-chequeo del timer
             if (timerDiv.textContent.includes('00:00')) {
                 btnReservar.disabled = true;
                 return; 
             }
             
-            // Si no hay evento seleccionado
+            // 2. Si no hay evento seleccionado
             if (!idSeleccionado || idSeleccionado === "") {
                 cupoDiv.textContent = 'Selecciona una función.';
                 precioDiv.textContent = '...';
                 btnReservar.disabled = true; 
                 return;
             }
+            
+            // 3. Actualizar PRECIO (primero para calcular el monto)
+            precioDiv.textContent = 'Cargando...';
+            const dataPrecio = await fetchData('obtenerPrecio', { idEvento: idSeleccionado });
 
+            if (dataPrecio.status === 'OK' && dataPrecio.precio) {
+                precioDiv.textContent = `$${dataPrecio.precio}`;
+            } else {
+                precioDiv.textContent = 'N/A';
+                console.error('Error al obtener precio:', dataPrecio.message);
+            }
+
+            // 4. Actualizar Cupo
             if (todosLosCupos.hasOwnProperty(idSeleccionado)) {
                 const cupoRestante = todosLosCupos[idSeleccionado];
 
-                // 1. Actualizar el indicador de Cupo
+                // Indicador visual de Cupo
                 if (cupoRestante === 0) {
                     cupoDiv.textContent = '🎟️ AGOTADO';
                     cupoDiv.classList.add('agotado-rojo');
@@ -398,7 +416,7 @@
                     btnReservar.disabled = false; 
                 }
 
-                // 2. Actualización de las opciones del SELECT (para mostrar "Agotado")
+                // Actualizar texto del SELECT para mostrar "(Agotado)"
                 Array.from(selectFecha.options).forEach(opt => {
                     if (todosLosCupos.hasOwnProperty(opt.value)) {
                         const cupo = todosLosCupos[opt.value];
@@ -413,20 +431,8 @@
                         }
                     }
                 });
-                
-                // 3. Actualizar PRECIO
-                precioDiv.textContent = '...';
-                const dataPrecio = await fetchData('obtenerPrecio', { idEvento: idSeleccionado });
-
-                if (dataPrecio.status === 'OK' && dataPrecio.precio) {
-                    precioDiv.textContent = `$${dataPrecio.precio}`;
-                } else {
-                    precioDiv.textContent = 'N/A';
-                }
-                
             } else {
                 cupoDiv.textContent = 'Error: ID no encontrado.';
-                precioDiv.textContent = 'N/A';
                 btnReservar.disabled = true; 
             }
         }
@@ -446,19 +452,19 @@
             const cantidadVal = parseInt(cantidad.value);
             const fechaVal = fecha.value; 
 
-            // ** VALIDACIONES FINALES **
+            // ** 1. VALIDACIONES CLIENTE **
             if (!nombreVal || !telefonoCliente || !cantidadVal || !fechaVal) {
                 mostrarMensaje('💡 Completa todos los campos.', 'error');
                 return;
             }
             
             if (telefonoCliente.length < MIN_CELULAR_LENGTH || telefonoCliente.length > MAX_CELULAR_LENGTH) {
-                mostrarMensaje(`El número de WhatsApp debe tener entre ${MIN_CELULAR_LENGTH} y ${MAX_CELULAR_LENGTH} dígitos (solo números).`, 'error');
+                mostrarMensaje(`El número de WhatsApp debe tener entre ${MIN_CELULAR_LENGTH} y ${MAX_CELULAR_LENGTH} dígitos (solo números, sin 0 ni 15).`, 'error');
                 return;
             }
 
-            if (btn.disabled) {
-                mostrarMensaje('⏰ Tiempo de reserva agotado o evento sin cupo. Actualiza la página para comenzar de nuevo.', 'error');
+            if (btn.disabled || timerDiv.textContent.includes('00:00')) {
+                mostrarMensaje('⏰ Tiempo agotado o evento sin cupo. Actualiza la página.', 'error');
                 return; 
             }
 
@@ -472,7 +478,7 @@
                 mostrarMensaje(`Solo quedan ${cupoActual} entradas. Ajusta la cantidad.`, 'error');
                 return;
             }
-            // ** FIN VALIDACIONES **
+            // ** FIN VALIDACIONES CLIENTE **
 
             const formData = new URLSearchParams();
             formData.append('accion', 'reservar');
@@ -481,44 +487,45 @@
             formData.append('cantidad', cantidadVal);
             formData.append('fecha', fechaVal); 
 
+            // Bloquear UI y detener timer
             btn.disabled = true;
             btn.classList.add('loading');
             clearInterval(timerTimeout); 
 
 
             try {
-                // Usamos el método POST y el cuerpo FormData para la acción 'reservar'
                 const data = await fetchData('reservar', {}, 'POST', formData);
 
                 if (data.status === 'OK') {
+                    // Mensaje de éxito antes de redirigir
                     mostrarMensaje(`✅ ¡RESERVA EXITOSA! ID: ${data.id}. Total: $${data.montoTotal}. Redirigiendo a WhatsApp...`, 'exito');
                     
                     const mensajeWhatsApp = [
-                        `¡Hola! Mi reserva es la ID: *${data.id}*.`,
-                        `Confirmo la reserva de *${cantidadVal}* entradas.`,
-                        `Mi teléfono (Cliente) es: *${telefonoCliente}*`, 
-                        `El monto total es de *$${data.montoTotal}*.`,
+                        `¡Hola! He realizado una reserva.`,
+                        `*ID de Reserva:* ${data.id}`,
+                        `*Entradas:* ${cantidadVal}`,
+                        `*Monto Total a Pagar:* $${data.montoTotal}`,
                         ``,
-                        `⭐ *LINK DE PAGO MERCADO PAGO:*`,
+                        `⭐ *LINK DE PAGO:*`,
                         `${data.linkPago}`, 
                         ``,
-                        `*IMPORTANTE:* Si el pago no se realiza en 5 minutos, la reserva puede cancelarse.`
+                        `*Importante:* El pago debe ser procesado lo antes posible para confirmar la reserva.`
                     ].join('\n'); 
 
                     const mensajeURL = encodeURIComponent(mensajeWhatsApp);
                     
+                    // Redirección a WhatsApp
                     window.open(`https://wa.me/${MANAGER_WHATSAPP_NUMBER}?text=${mensajeURL}`, '_blank');
                     
-                    actualizarCupo().then(mostrarCupoSeleccionado);
-                    
-                    btn.disabled = true; 
-                    btn.classList.remove('loading');
+                    // Actualizar UI (ocultar formulario y mostrar mensaje final si deseas)
+                    DOM_ELEMENTS.formReserva.style.display = 'none';
                     
                 } else {
-                    mostrarMensaje('❌ ' + (data.message || 'Error desconocido del servidor.'), 'error');
+                    mostrarMensaje('❌ ' + (data.message || 'Error desconocido del servidor durante la reserva.'), 'error');
+                    // Reestablecer UI
                     btn.disabled = false;
                     btn.classList.remove('loading');
-                    startTimer(); 
+                    startTimer(); // Reiniciar timer
                 }
                 
             } catch(err) {
@@ -533,23 +540,27 @@
         DOM_ELEMENTS.fecha.addEventListener('change', mostrarCupoSeleccionado);
 
 
-        // *** 4. INICIAR LAS FUNCIONES AL CARGAR (Solo una vez) ***
-        cargarNombreObra(); 
-        startTimer(); 
-        
-        // Carga inicial de eventos: Espera { status: 'OK', eventos: [...] }
-        fetchData('obtenerOpciones', { obra: OBRA_FILTRO_NOMBRE })
-            .then(data => {
-                if (data.status === 'OK' && Array.isArray(data.eventos)) {
-                    cargarOpcionesEventos(data.eventos);
-                } else {
-                    DOM_ELEMENTS.cupoDiv.textContent = 'Error al cargar opciones de eventos.';
-                }
-            })
-            .catch(err => {
-                console.error('Error FATAL al cargar eventos:', err);
-                DOM_ELEMENTS.cupoDiv.textContent = 'Error crítico al cargar eventos. Verifique la URL de Apps Script.';
-            });
+        // *** 4. INICIAR LAS FUNCIONES AL CARGAR ***
+        window.addEventListener('load', () => {
+            cargarNombreObra(); 
+            startTimer(); 
+            
+            fetchData('obtenerOpciones', { obra: OBRA_FILTRO_NOMBRE })
+                .then(data => {
+                    if (data.status === 'OK' && Array.isArray(data.eventos)) {
+                        cargarOpcionesEventos(data.eventos);
+                    } else {
+                        DOM_ELEMENTS.cupoDiv.textContent = '❌ Error al cargar opciones de eventos.';
+                        // Muestra el error en el mensaje superior para visibilidad
+                        mostrarMensaje(data.message || 'Error crítico de conexión con Google Script. Revisa la URL de EXEC_URL y la Implementación.', 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error FATAL al cargar eventos:', err);
+                    DOM_ELEMENTS.cupoDiv.textContent = 'Error crítico al cargar eventos.';
+                    mostrarMensaje('Error de red al conectar con Apps Script. ¿La URL de EXEC_URL es correcta?', 'error');
+                });
+        });
     </script>
 </body>
 </html>
