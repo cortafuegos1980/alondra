@@ -179,7 +179,7 @@
     <script>
         // *** 1. CONFIGURACIÓN CRUCIAL ***
         // 💡 1. REVISA TU URL DE APPS SCRIPT. DEBE SER LA ÚLTIMA DE TU DEPLOYMENT ACTIVO
-        const EXEC_URL = 'https://script.google.com/macros/s/AKfycbznmn09RZQb6o6-fh-VclrrE3Q2uRbxi-Nb3boBJN4qkAh8KZN9bH_sknGV30QmMubm/exec'; // ¡REEMPLAZA ESTA URL!
+        const EXEC_URL = 'TU_URL_DE_APPS_SCRIPT_AQUI'; // ¡REEMPLAZA ESTA URL!
 
         // Filtro de la obra
         const OBRA_FILTRO_NOMBRE = 'La Jirafa'; 
@@ -217,6 +217,7 @@
         // -------------------------------------------------------------------------
         function isNumberKey(evt) {
             const charCode = (evt.which) ? evt.which : event.keyCode;
+            // Permitir solo números (48-57)
             return !(charCode > 31 && (charCode < 48 || charCode > 57));
         }
 
@@ -447,6 +448,7 @@
             const { btnReservar: btn, nombre, telefono, cantidad, fecha, apellidoBot } = DOM_ELEMENTS;
 
             const nombreVal = nombre.value.trim();
+            // Limpiar el teléfono de cualquier caracter que no sea dígito
             const telefonoCliente = telefono.value.trim().replace(/\D/g,''); 
             const cantidadVal = parseInt(cantidad.value);
             const fechaVal = fecha.value; 
@@ -457,12 +459,12 @@
                 return;
             }
             
-            // 🌟 VALIDACIÓN ADICIONAL PARA LA LONGITUD DEL TELÉFONO (DOBLE CHEQUEO)
+            // 🌟 VALIDACIÓN ESTRICTA PARA LA LONGITUD DEL TELÉFONO
             if (telefonoCliente.length < MIN_CELULAR_LENGTH || telefonoCliente.length > MAX_CELULAR_LENGTH) {
                 mostrarMensaje(`El número de WhatsApp debe tener entre ${MIN_CELULAR_LENGTH} y ${MAX_CELULAR_LENGTH} dígitos (solo números).`, 'error');
                 return;
             }
-            // 🌟 FIN VALIDACIÓN ADICIONAL
+            // 🌟 FIN VALIDACIÓN
 
             if (btn.disabled) {
                 mostrarMensaje('⏰ Tiempo de reserva agotado o evento sin cupo. Actualiza la página para comenzar de nuevo.', 'error');
