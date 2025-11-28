@@ -11,6 +11,11 @@
         .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; }
+        /* Añadido un estilo para los inputs inválidos (solo si falla la validación de pattern o required) */
+        input:invalid:not(:focus), select:invalid:not(:focus) { 
+            border: 1px solid #D32F2F; 
+            box-shadow: 0 0 5px rgba(211, 47, 47, 0.5);
+        }
         input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
 
         /* Anti-spam */
@@ -138,8 +143,18 @@
 
             <div class="form-group">
                 <label for="telefono">Tu WhatsApp (Sin 0 ni 15):</label>
-                <input type="tel" id="telefono" placeholder="Ej: 3415123456" onkeypress="return isNumberKey(event)" required>
-            </div>
+                <input 
+                    type="tel" 
+                    id="telefono" 
+                    placeholder="Ej: 3415123456" 
+                    onkeypress="return isNumberKey(event)" 
+                    required
+                    minlength="8" 
+                    maxlength="15" 
+                    pattern="[0-9]{8,15}" 
+                    title="Ingresa entre 8 y 15 dígitos numéricos sin 0 ni 15."
+                >
+                </div>
 
             <div class="form-group">
                 <label for="cantidad">Cantidad:</label>
@@ -164,13 +179,18 @@
     <script>
         // *** 1. CONFIGURACIÓN CRUCIAL ***
         // 💡 1. REVISA TU URL DE APPS SCRIPT. DEBE SER LA ÚLTIMA DE TU DEPLOYMENT ACTIVO
-        const EXEC_URL = 'https://script.google.com/macros/s/AKfycbxouqas6Wvyf5gWWtPjHnUSfMcqgr__uBYah00v1tVhsqDAVgTR_dRZ5r5bBG_Fjm7e/exec'; // ¡REEMPLAZA ESTA URL!
+        const EXEC_URL = 'https://script.google.com/macros/s/AKfycbznmn09RZQb6o6-fh-VclrrE3Q2uRbxi-Nb3boBJN4qkAh8KZN9bH_sknGV30QmMubm/exec'; // ¡REEMPLAZA ESTA URL!
 
         // Filtro de la obra
         const OBRA_FILTRO_NOMBRE = 'La Jirafa'; 
 
         // 💡 2. REVISA TU NÚMERO DE GESTOR
         const MANAGER_WHATSAPP_NUMBER = '5493492594940'; 
+        
+        // 🌟 NUEVA CONFIGURACIÓN DE VALIDACIÓN DEL MÓVIL
+        const MIN_CELULAR_LENGTH = 8;
+        const MAX_CELULAR_LENGTH = 15; // Límite superior para validación JS
+        // 🌟 FIN NUEVA CONFIGURACIÓN
 
         let timerTimeout; 
         let todosLosCupos = {}; 
@@ -184,7 +204,7 @@
             cupoDiv: document.getElementById('cupoDiv'),
             precioDiv: document.getElementById('precioUnitario'),
             timerDiv: document.getElementById('timerDiv'),
-            formReserva: document.getElementById('formReserva'), // Asegúrate de tener este ID en <form>
+            formReserva: document.getElementById('formReserva'), 
             // Campos del formulario
             nombre: document.getElementById('nombre'),
             telefono: document.getElementById('telefono'),
@@ -436,6 +456,13 @@
                 mostrarMensaje('💡 Completa todos los campos.', 'error');
                 return;
             }
+            
+            // 🌟 VALIDACIÓN ADICIONAL PARA LA LONGITUD DEL TELÉFONO (DOBLE CHEQUEO)
+            if (telefonoCliente.length < MIN_CELULAR_LENGTH || telefonoCliente.length > MAX_CELULAR_LENGTH) {
+                mostrarMensaje(`El número de WhatsApp debe tener entre ${MIN_CELULAR_LENGTH} y ${MAX_CELULAR_LENGTH} dígitos (solo números).`, 'error');
+                return;
+            }
+            // 🌟 FIN VALIDACIÓN ADICIONAL
 
             if (btn.disabled) {
                 mostrarMensaje('⏰ Tiempo de reserva agotado o evento sin cupo. Actualiza la página para comenzar de nuevo.', 'error');
