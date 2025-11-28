@@ -317,14 +317,16 @@
                     // Solo actualiza si es un ID válido
                     if(todosLosCupos.hasOwnProperty(opt.value)) {
                          const cupo = todosLosCupos[opt.value];
-                         // Limpia el texto original y agrega '(Agotado)' si es necesario
-                         const textoOriginal = opt.textContent.split(" (")[0]; 
+                         
+                         // *** CÓDIGO CORREGIDO ***
+                         // Quita explícitamente solo la etiqueta (Agotado) si existe.
+                         let textoLimpio = opt.textContent.replace(' (Agotado)', '').trim();
 
                          if (cupo === 0) {
-                            opt.textContent = textoOriginal + " (Agotado)";
+                            opt.textContent = textoLimpio + " (Agotado)";
                             opt.style.color = "#b5b5b5"; 
                          } else {
-                            opt.textContent = textoOriginal;
+                            opt.textContent = textoLimpio; // Restaura el texto limpio: "Viernes 10/11-22:00 hs"
                             opt.style.color = "black";
                          }
                     }
@@ -453,3 +455,4 @@
     </script>
 </body>
 </html>
+
