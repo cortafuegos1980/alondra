@@ -373,85 +373,105 @@ function startTimer() {
             }
         }
 
-        /* BOTON RESERVA */
-        document.getElementById('btnReservar').onclick = async function() {
-            mostrarMensaje(''); 
+        /* BOTON RESERVA - CÓDIGO CORREGIDO */
+document.getElementById('btnReservar').onclick = async function() {
+    mostrarMensaje(''); 
 
-            const nombre = document.getElementById('nombre').value.trim();
-            const telefonoCliente = document.getElementById('telefono').value.trim().replace(/\D/g,''); 
-            const cantidad = parseInt(document.getElementById('cantidad').value);
-            const fecha = document.getElementById('fecha').value; 
+    const btn = this; // Guardamos la referencia al botón
 
-            if (!nombre || !telefonoCliente || !cantidad || !fecha) {
-                mostrarMensaje('💡 Completa todos los campos.', 'error');
-                return;
-            }
+    const nombre = document.getElementById('nombre').value.trim();
+    const telefonoCliente = document.getElementById('telefono').value.trim().replace(/\D/g,''); 
+    const cantidad = parseInt(document.getElementById('cantidad').value);
+    const fecha = document.getElementById('fecha').value; 
 
-            // VALIDACIÓN HONEYPOT (ANTI-SPAM)
-            const apellidoBot = document.getElementById('apellidoBot').value.trim();
-            if (apellidoBot.length > 0) {
-                mostrarMensaje('❌ Error de validación de formulario.', 'error');
-                return; 
-            }
+    if (!nombre || !telefonoCliente || !cantidad || !fecha) {
+        mostrarMensaje('💡 Completa todos los campos.', 'error');
+        return;
+    }
 
-            // Verifica que haya cupo (doble chequeo)
-            const cupoActual = todosLosCupos[fecha] || 0;
-            if (cantidad > cupoActual) {
-                 mostrarMensaje(`Solo quedan ${cupoActual} entradas. Ajusta la cantidad.`, 'error');
-                 return;
-            }
+    // Comprobación de que el botón no esté ya deshabilitado (por el temporizador)
+    if (btn.disabled) {
+         mostrarMensaje('⏰ Tiempo de reserva agotado. Actualiza la página para comenzar de nuevo.', 'error');
+         return; // Salimos si el temporizador lo deshabilitó
+    }
 
 
-            const formData = new URLSearchParams();
-            formData.append('accion', 'reservar');
-            formData.append('nombre', nombre);
-            formData.append('telefono', telefonoCliente);
-            formData.append('cantidad', cantidad);
-            formData.append('fecha', fecha); 
+    // VALIDACIÓN HONEYPOT (ANTI-SPAM)
+    const apellidoBot = document.getElementById('apellidoBot').value.trim();
+    if (apellidoBot.length > 0) {
+        mostrarMensaje('❌ Error de validación de formulario.', 'error');
+        return; 
+    }
 
-            this.disabled = true;
-            this.classList.add('loading');
-            clearInterval(timerTimeout); 
+    // Verifica que haya cupo (doble chequeo)
+    const cupoActual = todosLosCupos[fecha] || 0;
+    if (cantidad > cupoActual) {
+         mostrarMensaje(`Solo quedan ${cupoActual} entradas. Ajusta la cantidad.`, 'error');
+         return;
+    }
 
-            try {
-                const response = await fetch(EXEC_URL, { method: 'POST', body: formData }); 
-                const data = await response.json();
+    const formData = new URLSearchParams();
+    formData.append('accion', 'reservar');
+    formData.append('nombre', nombre);
+    formData.append('telefono', telefonoCliente);
+    formData.append('cantidad', cantidad);
+    formData.append('fecha', fecha); 
 
-                if (data.status === 'OK') {
-                    mostrarMensaje(`✅ ¡RESERVA EXITOSA! ID: ${data.id}. Total: $${data.montoTotal}. Redirigiendo a WhatsApp...`, 'exito');
-                    
-                    const mensajeWhatsApp = [
-                        `¡Hola! Mi reserva es la ID: *${data.id}*.`,
-                        `Confirmo la reserva de *${cantidad}* entradas.`,
-                        `Mi teléfono (Cliente) es: *${telefonoCliente}*`, 
-                        `El monto total es de *$${data.montoTotal}*.`,
-                        ``,
-                        `⭐ *LINK DE PAGO MERCADO PAGO:*`,
-                        `${data.linkPago}`, 
-                        ``,
-                        `*IMPORTANTE:* Si el pago no se realiza en 5 minutos, la reserva puede cancelarse.`
-                    ].join('\n'); 
+    // Desactivamos y mostramos carga ANTES de la llamada
+    btn.disabled = true;
+    btn.classList.add('loading');
+    clearInterval(timerTimeout); // Detenemos el contador
 
-                    const mensajeURL = encodeURIComponent(mensajeWhatsApp);
-                    
-                    window.open(`https://wa.me/${MANAGER_WHATSAPP_NUMBER}?text=${mensajeURL}`, '_blank');
-                    
-                    // Actualiza cupo después de reservar
-                    actualizarCupo().then(() => mostrarCupoSeleccionado()); 
-                } else {
-                    mostrarMensaje('❌ ' + data.message, 'error');
-                    startTimer(); 
-                }
-                
-            } catch(err) {
-                mostrarMensaje('❌ Error de conexión o red: ' + err.message, 'error');
-                startTimer(); 
-            }
 
-            this.disabled = false;
-            this.classList.remove('loading');
-        };
+    try {
+        const response = await fetch(EXEC_URL, { method: 'POST', body: formData }); 
+        const data = await response.json();
 
+        if (data.status === 'OK') {
+            mostrarMensaje(`✅ ¡RESERVA EXITOSA! ID: ${data.id}. Total: $${data.montoTotal}. Redirigiendo a WhatsApp...`, 'exito');
+            
+            const mensajeWhatsApp = [
+                `¡Hola! Mi reserva es la ID: *${data.id}*.`,
+                `Confirmo la reserva de *${cantidad}* entradas.`,
+                `Mi teléfono (Cliente) es: *${telefonoCliente}*`, 
+                `El monto total es de *$${data.montoTotal}*.`,
+                ``,
+                `⭐ *LINK DE PAGO MERCADO PAGO:*`,
+                `${data.linkPago}`, 
+                ``,
+                `*IMPORTANTE:* Si el pago no se realiza en 5 minutos, la reserva puede cancelarse.`
+            ].join('\n'); 
+
+            const mensajeURL = encodeURIComponent(mensajeWhatsApp);
+            
+            window.open(`https://wa.me/${MANAGER_WHATSAPP_NUMBER}?text=${mensajeURL}`, '_blank');
+            
+            // Actualiza cupo después de reservar
+            actualizarCupo().then(() => mostrarCupoSeleccionado());
+            
+            // Si es exitoso, dejamos el botón deshabilitado y mostramos éxito
+            btn.disabled = true; 
+            btn.classList.remove('loading');
+            
+        } else {
+            // Si hay un error del servidor, reactivamos el botón y el temporizador
+            mostrarMensaje('❌ ' + data.message, 'error');
+            btn.disabled = false;
+            btn.classList.remove('loading');
+            startTimer(); 
+        }
+        
+    } catch(err) {
+        // Si hay un error de conexión, reactivamos el botón y el temporizador
+        mostrarMensaje('❌ Error de conexión o red: ' + err.message, 'error');
+        btn.disabled = false;
+        btn.classList.remove('loading');
+        startTimer(); 
+    }
+    
+    // 🛑 SE ELIMINARON LAS LÍNEAS btn.disabled = false; y btn.classList.remove('loading'); 
+    //    del final para que no interfieran con la lógica de éxito/error/temporizador.
+};
 
         document.getElementById('fecha').addEventListener('change', mostrarCupoSeleccionado);
 
@@ -470,6 +490,7 @@ function startTimer() {
     </script>
 </body>
 </html>
+
 
 
 
