@@ -19,33 +19,31 @@
         /* Anti-spam */
         .honeypot { display: none; visibility: hidden; height: 0; width: 0; position: absolute; left: -9999px; }
 
-        /* --- ESTILOS COMPACTOS FINALES (3 COLUMNAS) --- */
+        /* --- ESTILOS COMPACTOS FINALES (3 COLUMNAS UNIFORMES) --- */
 
         /* Contenedor principal para organizar las 3 cajas lado a lado */
         #contenedor-superior {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: stretch; /* Asegura que todas las cajas tengan la misma altura */
             flex-wrap: wrap; 
             margin-bottom: 20px;
         }
 
-        /* Estilo general para las cajas de Estado (Tiempo y Cupo) */
+        /* Aplica a las cajas de Tiempo y Cupo */
         .caja-estado-superior {
-            max-width: 120px; 
             padding: 5px 10px;
             border: 1px solid #ddd;
             border-radius: 6px;
             background-color: #f9f9f9; 
-            margin: 10px 0;
+            margin: 5px;
             text-align: center;
-            flex-grow: 1;
-            margin: 5px; 
+            flex-grow: 1; 
+            flex-basis: 0; /* Asegura la distribución equitativa de ancho */
         }
 
-        /* Estilo de la caja de Precio (Columna central) */
+        /* Estilo de la caja de Precio */
         .precio-caja {
-            max-width: 180px; 
             padding: 5px 10px;
             border: 1px solid #ddd;
             border-radius: 6px;
@@ -54,7 +52,9 @@
             color: #555; 
             font-weight: 600; 
             flex-grow: 1;
+            flex-basis: 0; /* Asegura la distribución equitativa de ancho */
             margin: 5px;
+            text-align: center;
         }
 
         .precio-monto {
@@ -85,14 +85,14 @@
 
         <div id="contenedor-superior">
             
-            <div id="caja-tiempo" class="caja-estado-superior">
-                <div id="timerDiv" class="info-estado">⏱️ 05:00</div>
-            </div>
-            
             <div id="precioUnitario" class="precio-caja"></div> 
             
             <div id="caja-cupo" class="caja-estado-superior">
                 <div id="cupoDiv" class="info-estado">Cargando cupo...</div>
+            </div>
+            
+            <div id="caja-tiempo" class="caja-estado-superior">
+                <div id="timerDiv" class="info-estado">⏱️ 05:00</div>
             </div>
             
         </div>
@@ -144,9 +144,6 @@
         // -------------------------------------------------------------------------
         // VALIDACIÓN ESTRICTA DE WHATSAPP (Solo números)
         // -------------------------------------------------------------------------
-        /**
-         * Solo permite la entrada de números (0-9) en los campos de texto.
-         */
         function isNumberKey(evt) {
             const charCode = (evt.which) ? evt.which : event.keyCode;
             
@@ -184,7 +181,7 @@
             }
         }
 
-        /* CARGAR NOMBRE DE OBRA Y PRECIO (Columna 2) */
+        /* CARGAR NOMBRE DE OBRA Y PRECIO (Columna 1) */
         async function cargarNombreObra() {
             const tituloObra = document.getElementById('tituloObra');
             const precioDiv = document.getElementById('precioUnitario'); 
@@ -229,7 +226,7 @@
             }
         }
 
-        /* TEMPORIZADOR (Columna 1) */
+        /* TEMPORIZADOR (Columna 3) */
         function startTimer() {
             let duration = 5 * 60; // 5 minutos
             const timerDiv = document.getElementById('timerDiv');
@@ -241,7 +238,6 @@
                 const displayMinutes = minutes < 10 ? "0" + minutes : minutes;
                 const displaySeconds = seconds < 10 ? "0" + seconds : seconds;
 
-                // CLAVE: Texto corto (solo emoji y tiempo)
                 timerDiv.textContent = "⏱️ " + displayMinutes + ":" + displaySeconds; 
 
                 if (--duration < 0) {
@@ -312,7 +308,7 @@
             }
         }
 
-        /* MOSTRAR CUPO SELECCIONADO (Columna 3) */
+        /* MOSTRAR CUPO SELECCIONADO (Columna 2) */
         function mostrarCupoSeleccionado() {
             const selectFecha = document.getElementById('fecha');
             const idSeleccionado = selectFecha.value;
@@ -325,8 +321,8 @@
                     cupoDiv.textContent = '🎟️ AGOTADO';
                     cupoDiv.classList.add('agotado-rojo');
                 } else {
-                    // CLAVE: Texto corto (emoji y número)
-                    cupoDiv.textContent = `🎟️ ${cupoRestante} disponibles`;
+                    // ✅ CLAVE: Texto corto (usando "disp.")
+                    cupoDiv.textContent = `🎟️ ${cupoRestante} disp.`;
                     cupoDiv.classList.remove('agotado-rojo');
                 }
 
@@ -352,7 +348,6 @@
             mostrarMensaje(''); 
 
             const nombre = document.getElementById('nombre').value.trim();
-            // Limpia caracteres no numéricos
             const telefonoCliente = document.getElementById('telefono').value.trim().replace(/\D/g,''); 
             const cantidad = parseInt(document.getElementById('cantidad').value);
             const fecha = document.getElementById('fecha').value; 
@@ -387,7 +382,6 @@
                 if (data.status === 'OK') {
                     mostrarMensaje(`✅ ¡RESERVA EXITOSA! ID: ${data.id}. Total: $${data.montoTotal}. Redirigiendo a WhatsApp...`, 'exito');
                     
-                    // Construcción del Mensaje de WhatsApp 
                     const mensajeWhatsApp = [
                         `¡Hola! Mi reserva es la ID: *${data.id}*.`,
                         `Confirmo la reserva de *${cantidad}* entradas.`,
@@ -402,7 +396,6 @@
 
                     const mensajeURL = encodeURIComponent(mensajeWhatsApp);
                     
-                    // Abre WhatsApp con el número del Gestor
                     window.open(`https://wa.me/${MANAGER_WHATSAPP_NUMBER}?text=${mensajeURL}`, '_blank');
                     
                     actualizarCupo();
