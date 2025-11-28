@@ -76,6 +76,40 @@
             color: #D32F2F; 
             font-weight: bold;
         }
+
+<style>
+    /* ... Tus otros estilos ... */
+    
+    button { 
+        width: 100%; 
+        padding: 15px; 
+        background: #25D366; /* Verde de WhatsApp (activo) */
+        color: white; 
+        border: none; 
+        border-radius: 5px; 
+        font-size: 16px; 
+        font-weight: bold; 
+        cursor: pointer; 
+        transition: background 0.3s; /* Añadido para un cambio de color suave */
+    }
+    
+    /* ESTILO PARA CUANDO EL BOTÓN ESTÉ DESHABILITADO */
+    button:disabled {
+        background: #cccccc; /* Gris claro */
+        color: #666666;      /* Texto gris oscuro */
+        cursor: not-allowed; 
+        opacity: 0.8;        /* Opcional: baja un poco la opacidad */
+        box-shadow: none;
+    }
+    
+    button.loading { /* Estilo que ya tienes para cuando está cargando */
+        background: #cccccc; 
+        cursor: not-allowed; 
+    }
+</style>
+
+
+        
     </style>
 </head>
 <body>
@@ -490,6 +524,7 @@ document.getElementById('btnReservar').onclick = async function() {
     </script>
 </body>
 </html>
+
 
 
 
