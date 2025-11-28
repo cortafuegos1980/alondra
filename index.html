@@ -178,16 +178,16 @@
     
     <script>
         // *** 1. CONFIGURACIÓN CRUCIAL ***
-        // 💡 1. URL DE APPS SCRIPT (NUEVA URL PROPORCIONADA)
-        const EXEC_URL = 'https://script.google.com/macros/s/AKfycbx7IqI9ZJ3SY2SHB-mf8Ykqw0TeX2BTy5TVEzuNkDbZuald7ohpIva3Vv5oaLSrpD6y/exec'; 
+        // 💡 1. URL DE APPS SCRIPT (Cambiado con la URL que proporcionaste)
+        const EXEC_URL = https://script.google.com/macros/s/AKfycbx7IqI9ZJ3SY2SHB-mf8Ykqw0TeX2BTy5TVEzuNkDbXuald7ohpIva3Vv5oaLSrpD6y/exec'; 
 
         // Filtro de la obra
         const OBRA_FILTRO_NOMBRE = 'La Jirafa'; 
 
-        // 💡 2. REVISA TU NÚMERO DE GESTOR (SE MANTIENE)
+        // 💡 2. REVISA TU NÚMERO DE GESTOR
         const MANAGER_WHATSAPP_NUMBER = '5493492594940'; 
         
-        // 🌟 CONFIGURACIÓN DE VALIDACIÓN DEL MÓVIL (SE MANTIENE)
+        // 🌟 CONFIGURACIÓN DE VALIDACIÓN DEL MÓVIL
         const MIN_CELULAR_LENGTH = 8;
         const MAX_CELULAR_LENGTH = 15; 
 
@@ -342,8 +342,7 @@
             const cupoDiv = DOM_ELEMENTS.cupoDiv;
             
             try {
-                // 🛑 CORRECCIÓN: Ahora consulta el cupo de todas las obras para filtrar después en el cliente
-                const response = await fetch(EXEC_URL + '?accion=consultarCupo&obra=' + encodeURIComponent(OBRA_FILTRO_NOMBRE)); 
+                const response = await fetch(EXEC_URL + '?accion=consultarCupo'); 
                 const data = await response.json();
                 
                 if (data.status === 'OK' && data.cupos) {
@@ -370,11 +369,9 @@
                 return; 
             }
             
-            // 2. ESTADO INICIAL (Cuando no hay nada seleccionado o no hay opciones)
-             const opcionesDisponibles = Array.from(selectFecha.options).some(opt => opt.value && opt.value !== "");
-            
-             if (!opcionesDisponibles || !idSeleccionado || idSeleccionado === "") {
-                cupoDiv.textContent = opcionesDisponibles ? 'Selecciona una función.' : 'No hay funciones.';
+            // 2. ESTADO INICIAL (Cuando no hay nada seleccionado)
+            if (!idSeleccionado || idSeleccionado === "") {
+                cupoDiv.textContent = 'Selecciona una función.';
                 precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">...</span>';
                 if (btnReservar) btnReservar.disabled = true; 
                 return;
@@ -385,7 +382,7 @@
             if (todosLosCupos.hasOwnProperty(idSeleccionado)) {
                 const cupoRestante = todosLosCupos[idSeleccionado];
 
-                if (cupoRestante <= 0) {
+                if (cupoRestante === 0) {
                     cupoDiv.textContent = '🎟️ AGOTADO';
                     cupoDiv.classList.add('agotado-rojo');
                     if (btnReservar) btnReservar.disabled = true; 
@@ -402,7 +399,7 @@
                         const cupo = todosLosCupos[opt.value];
                         let textoLimpio = opt.textContent.replace(' (Agotado)', '').trim();
 
-                        if (cupo <= 0) {
+                        if (cupo === 0) {
                             opt.textContent = textoLimpio + " (Agotado)";
                             opt.style.color = "#b5b5b5"; 
                         } else {
@@ -420,12 +417,9 @@
                     const data = await response.json();
 
                     if (data.status === 'OK' && data.precio) {
-                        // Formateo de precio con puntos de miles (opcional, pero útil)
-                        const precioFormateado = new Intl.NumberFormat('es-AR').format(data.precio);
-                        
                         precioDiv.innerHTML = `
                             <span style="font-size:0.9em; display:block;">VALOR</span>
-                            <span class="precio-monto">$${precioFormateado}</span>
+                            <span class="precio-monto">$${data.precio}</span>
                         `;
                     } else {
                         precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">N/A</span>';
@@ -457,7 +451,6 @@
             const telefonoCliente = telefono.value.trim().replace(/\D/g,''); 
             const cantidadVal = parseInt(cantidad.value);
             const fechaVal = fecha.value; 
-            const fechaTexto = fecha.options[fecha.selectedIndex].textContent; // Para el mensaje de WhatsApp
 
             // ** VALIDACIONES FINALES **
             if (!nombreVal || !telefonoCliente || !cantidadVal || !fechaVal) {
@@ -479,13 +472,13 @@
 
             // VALIDACIÓN HONEYPOT (ANTI-SPAM)
             if (apellidoBot.value.trim().length > 0) {
-                mostrarMensaje('❌ Error de validación de formulario (Anti-spam).', 'error');
+                mostrarMensaje('❌ Error de validación de formulario.', 'error');
                 return; 
             }
 
             // Verifica que haya cupo (doble chequeo)
             const cupoActual = todosLosCupos[fechaVal] || 0;
-            if (cantidadVal <= 0 || cantidadVal > cupoActual) {
+            if (cantidadVal > cupoActual) {
                 mostrarMensaje(`Solo quedan ${cupoActual} entradas. Ajusta la cantidad.`, 'error');
                 return;
             }
@@ -496,7 +489,7 @@
             formData.append('nombre', nombreVal);
             formData.append('telefono', telefonoCliente);
             formData.append('cantidad', cantidadVal);
-            formData.append('idEvento', fechaVal); // Enviar el ID, no 'fecha'
+            formData.append('fecha', fechaVal); 
 
             // Desactivamos y mostramos carga ANTES de la llamada
             btn.disabled = true;
@@ -509,40 +502,31 @@
                 const data = await response.json();
 
                 if (data.status === 'OK') {
-                    
-                    // Asegurar que el monto total esté presente
-                    const montoTotal = data.montoTotal ? new Intl.NumberFormat('es-AR').format(data.montoTotal) : 'N/D';
-
-                    mostrarMensaje(`✅ ¡RESERVA EXITOSA! ID: ${data.id}. Total: $${montoTotal}. Redirigiendo a WhatsApp...`, 'exito');
+                    mostrarMensaje(`✅ ¡RESERVA EXITOSA! ID: ${data.id}. Total: $${data.montoTotal}. Redirigiendo a WhatsApp...`, 'exito');
                     
                     const mensajeWhatsApp = [
-                        `*¡RESERVA CONFIRMADA!*`,
-                        `*Obra:* ${DOM_ELEMENTS.tituloObra.textContent.replace('Reserva Entradas - ', '')}`,
-                        `*Fecha/Hora:* ${fechaTexto}`,
-                        `*ID de Reserva:* ${data.id}`,
-                        `*Nombre:* ${nombreVal}`,
-                        `*Entradas:* ${cantidadVal}`,
-                        `*Monto Total:* $${montoTotal}`,
+                        `¡Hola! Mi reserva es la ID: *${data.id}*.`,
+                        `Confirmo la reserva de *${cantidadVal}* entradas.`,
+                        `Mi teléfono (Cliente) es: *${telefonoCliente}*`, 
+                        `El monto total es de *$${data.montoTotal}*.`,
                         ``,
                         `⭐ *LINK DE PAGO MERCADO PAGO:*`,
-                        `${data.linkPago || 'No disponible.'}`, 
+                        `${data.linkPago}`, 
                         ``,
-                        `*IMPORTANTE:* Si el pago no se realiza en 5 minutos, la reserva puede cancelarse.`,
-                        `Mi teléfono (Cliente) es: *${telefonoCliente}*`
+                        `*IMPORTANTE:* Si el pago no se realiza en 5 minutos, la reserva puede cancelarse.`
                     ].join('\n'); 
 
                     const mensajeURL = encodeURIComponent(mensajeWhatsApp);
                     
                     window.open(`https://wa.me/${MANAGER_WHATSAPP_NUMBER}?text=${mensajeURL}`, '_blank');
                     
-                    // Una vez completada la reserva, actualizamos el cupo para reflejar el cambio.
                     actualizarCupo().then(() => mostrarCupoSeleccionado());
                     
                     btn.disabled = true; 
                     btn.classList.remove('loading');
                     
                 } else {
-                    mostrarMensaje('❌ ' + (data.message || 'Error desconocido al procesar la reserva.'), 'error');
+                    mostrarMensaje('❌ ' + data.message, 'error');
                     btn.disabled = false;
                     btn.classList.remove('loading');
                     startTimer(); 
