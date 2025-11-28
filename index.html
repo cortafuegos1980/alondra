@@ -337,14 +337,14 @@ function startTimer() {
 
 
         
-        /* MOSTRAR CUPO Y PRECIO SELECCIONADO (Columna 2 y 1) */
+       /* MOSTRAR CUPO Y PRECIO SELECCIONADO (Columna 2 y 1) */
 async function mostrarCupoSeleccionado() { 
     const selectFecha = document.getElementById('fecha');
     const idSeleccionado = selectFecha.value;
     const cupoDiv = document.getElementById('cupoDiv');
     const precioDiv = document.getElementById('precioUnitario'); 
     
-    // 💡 CLAVE 1: Obtenemos la referencia al botón Reservar
+    // 💡 CLAVE 1: OBTENEMOS LA REFERENCIA AL BOTÓN (Línea que faltaba)
     const btnReservar = document.getElementById('btnReservar'); 
     
 
@@ -373,18 +373,52 @@ async function mostrarCupoSeleccionado() {
             if (btnReservar) btnReservar.disabled = false; 
         }
 
-        // ... el resto de la lógica de actualización de opciones agotadas (mantener sin cambios) ...
+        // Opciones del select: (Actualización de agotado)
+        const opciones = selectFecha.options;
+        for (let opt of opciones) {
+            // Solo actualiza si es un ID válido
+            if(todosLosCupos.hasOwnProperty(opt.value)) {
+                 const cupo = todosLosCupos[opt.value];
+                 
+                 // Quita explícitamente solo la etiqueta (Agotado) si existe.
+                 let textoLimpio = opt.textContent.replace(' (Agotado)', '').trim();
 
+                 if (cupo === 0) {
+                    opt.textContent = textoLimpio + " (Agotado)";
+                    opt.style.color = "#b5b5b5"; 
+                 } else {
+                    opt.textContent = textoLimpio; 
+                    opt.style.color = "black";
+                 }
+            }
+        }
+        
         // 2. Actualizar Precio Específico del Evento (Llamada al servidor)
-        // ... (El resto del código de precio queda igual) ...
+        try {
+            precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">...</span>';
+            const url = EXEC_URL + '?accion=obtenerPrecio&idEvento=' + encodeURIComponent(idSeleccionado);
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.status === 'OK' && data.precio) {
+                precioDiv.innerHTML = `
+                    <span style="font-size:0.9em; display:block;">VALOR</span>
+                    <span class="precio-monto">$${data.precio}</span>
+                `;
+            } else {
+                precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">N/A</span>';
+            }
+        } catch (error) {
+            console.error('Error al actualizar precio:', error);
+            precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">Error</span>';
+        }
         
     } else {
         cupoDiv.textContent = 'Selecciona una función.';
         precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">...</span>';
         if (btnReservar) btnReservar.disabled = true; 
     }
-}
-                
+}    
                 
                 
                 // 2. Actualizar Precio Específico del Evento (Llamada al servidor)
@@ -530,6 +564,7 @@ document.getElementById('btnReservar').onclick = async function() {
     </script>
 </body>
 </html>
+
 
 
 
