@@ -163,19 +163,14 @@
     
     <script>
         // *** 1. CONFIGURACIÓN CRUCIAL ***
-        // 💡 1. REVISA TU URL DE APPS SCRIPT. DEBE SER LA ÚLTIMA DE TU DEPLOYMENT ACTIVO
-        const EXEC_URL = 'https://script.google.com/macros/s/AKfycbznmn09RZQb6o6-fh-VclrrE3Q2uRbxi-Nb3boBJN4qkAh8KZN9bH_sknGV30QmMubm/exec'; // ¡REEMPLAZA ESTA URL!
-
-        // Filtro de la obra
+        const EXEC_URL = 'https://script.google.com/macros/s/AKfycbznmn09RZQb6o6-fh-VclrrE3Q2uRbxi-Nb3boBJN4qkAh8KZN9bH_sknGV30QmMubm/exec'; 
         const OBRA_FILTRO_NOMBRE = 'La Jirafa'; 
-
-        // 💡 2. REVISA TU NÚMERO DE GESTOR
         const MANAGER_WHATSAPP_NUMBER = '5493492594940'; 
 
         let timerTimeout; 
         let todosLosCupos = {}; 
 
-        // 🛑 OPTIMIZACIÓN DEL DOM: Guardamos las referencias una sola vez
+        // 🛑 PUNTO 1: CACHING DE ELEMENTOS DEL DOM
         const DOM_ELEMENTS = {
             tituloObra: document.getElementById('tituloObra'),
             message: document.getElementById('message'),
@@ -184,7 +179,7 @@
             cupoDiv: document.getElementById('cupoDiv'),
             precioDiv: document.getElementById('precioUnitario'),
             timerDiv: document.getElementById('timerDiv'),
-            formReserva: document.getElementById('formReserva'), // Asegúrate de tener este ID en <form>
+            formReserva: document.getElementById('formReserva'), 
             // Campos del formulario
             nombre: document.getElementById('nombre'),
             telefono: document.getElementById('telefono'),
@@ -201,13 +196,13 @@
         }
 
 
-        /* Función para mostrar mensajes de estado (LIMPIA Y USA CLASES CSS) */
+        /* Función para mostrar mensajes de estado */
         function mostrarMensaje(texto, tipo = 'error') {
             const messageDiv = DOM_ELEMENTS.message;
             
             if (!texto) {
                 messageDiv.style.display = 'none';
-                messageDiv.className = 'message'; // Limpiar clases
+                messageDiv.className = 'message'; 
                 return;
             }
 
@@ -257,7 +252,7 @@
         
         /* TEMPORIZADOR (Columna 3) */
         function startTimer() {
-            let duration = 5 * 60; // 5 minutos de producción
+            let duration = 5 * 60; 
             const { timerDiv, btnReservar } = DOM_ELEMENTS;
             
             if (btnReservar) {
@@ -337,19 +332,17 @@
         }
 
 
-        /* MOSTRAR CUPO Y PRECIO SELECCIONADO (CLAVE LIMPIA Y CORREGIDA) */
+        /* MOSTRAR CUPO Y PRECIO SELECCIONADO */
         async function mostrarCupoSeleccionado() { 
             const { fecha: selectFecha, cupoDiv, precioDiv, btnReservar, timerDiv } = DOM_ELEMENTS;
             const idSeleccionado = selectFecha.value;
             
             
-            // 🛑 1. VERIFICAR SI EL TIEMPO ESTÁ AGOTADO (Prioridad 1)
             if (timerDiv.textContent.includes('00:00')) {
                 if (btnReservar) btnReservar.disabled = true;
                 return; 
             }
             
-            // 2. ESTADO INICIAL (Cuando no hay nada seleccionado)
             if (!idSeleccionado || idSeleccionado === "") {
                 cupoDiv.textContent = 'Selecciona una función.';
                 precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">...</span>';
@@ -358,7 +351,6 @@
             }
 
 
-            // 3. ACTUALIZAR CUPO, ESTADO Y BOTÓN
             if (todosLosCupos.hasOwnProperty(idSeleccionado)) {
                 const cupoRestante = todosLosCupos[idSeleccionado];
 
@@ -372,7 +364,6 @@
                     if (btnReservar) btnReservar.disabled = false; 
                 }
 
-                // 3.1. Actualización de opciones del select (gris para agotados)
                 const opciones = selectFecha.options;
                 for (let opt of opciones) {
                     if(todosLosCupos.hasOwnProperty(opt.value)) {
@@ -424,6 +415,7 @@
             
             mostrarMensaje(''); 
 
+            // Desestructuración para usar nombres más cortos en la función
             const { btnReservar: btn, nombre, telefono, cantidad, fecha, apellidoBot } = DOM_ELEMENTS;
 
             const nombreVal = nombre.value.trim();
