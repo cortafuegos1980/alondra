@@ -102,6 +102,25 @@
             background: #cccccc; 
             cursor: not-allowed; 
         }
+/* ... dentro de tu bloque <style> ... */
+
+/* Estilo general del mensaje */
+.message { 
+    padding: 12px; /* Un poco más de espacio */
+    border-radius: 8px; /* Bordes más suaves */
+    margin: 15px 5px 20px 5px; /* Margen para separarlo del formulario y las cajas */
+    display: none; 
+    text-align: center; /* Centramos el texto */
+    font-size: 1.0em;
+}
+
+/* Estilo específico para errores (rojo) */
+.message[style*="background-color: rgb(248, 215, 218)"] { /* Este es el color del error #f8d7da */
+    border: 1px solid #f5c6cb; /* Borde suave para definirlo */
+    font-weight: bold;
+    text-transform: none; /* Quitamos el uppercase que no se veía prolijo */
+}
+        
     </style>
 </head>
 <body>
@@ -527,3 +546,4 @@
     </script>
 </body>
 </html>
+
