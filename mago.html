@@ -25,7 +25,7 @@
         #contenedor-superior {
             display: flex;
             justify-content: space-between;
-            align-items: stretch; /* Asegura que todas las cajas tengan la misma altura */
+            align-items: stretch; 
             flex-wrap: wrap; 
             margin-bottom: 20px;
         }
@@ -39,7 +39,7 @@
             margin: 5px;
             text-align: center;
             flex-grow: 1; 
-            flex-basis: 0; /* Asegura la distribución equitativa de ancho */
+            flex-basis: 0; 
         }
 
         /* Estilo de la caja de Precio */
@@ -52,7 +52,7 @@
             color: #555; 
             font-weight: 600; 
             flex-grow: 1;
-            flex-basis: 0; /* Asegura la distribución equitativa de ancho */
+            flex-basis: 0; 
             margin: 5px;
             text-align: center;
         }
@@ -85,7 +85,10 @@
 
         <div id="contenedor-superior">
             
-            <div id="precioUnitario" class="precio-caja"></div> 
+            <div id="precioUnitario" class="precio-caja">
+                <span style="font-size:0.9em; display:block;">VALOR</span> 
+                <span class="precio-monto">Cargando...</span>
+            </div> 
             
             <div id="caja-cupo" class="caja-estado-superior">
                 <div id="cupoDiv" class="info-estado">Cargando cupo...</div>
@@ -104,7 +107,7 @@
         </div>
 
         <div class="form-group">
-            <label>Tu WhatsApp (Sin 0 ni 15):</label> 
+            <label>Tu WhatsApp (Sin 0 ni 15):</label>
             <input type="tel" id="telefono" placeholder="Ej: 3415123456" onkeypress="return isNumberKey(event)">
         </div>
 
@@ -130,17 +133,16 @@
     <script>
         // *** 1. CONFIGURACIÓN CRUCIAL ***
         // 💡 1. REVISA TU URL DE APPS SCRIPT. DEBE SER LA ÚLTIMA DE TU DEPLOYMENT ACTIVO
-        const EXEC_URL = 'https://script.google.com/macros/s/AKfycbznmn09RZQb6o6-fh-VclrrE3Q2uRbxi-Nb3boBJN4qkAh8KZN9bH_sknGV30QmMubm/exec';
-        
+        const EXEC_URL = 'https://script.google.com/macros/s/AKfycbznmn09RZQb6o6-fh-VclrrE3Q2uRbxi-Nb3boBJN4qkAh8KZN9bH_sknGV30QmMubm/exec'; // ¡REEMPLAZA ESTA URL!
 
         // Filtro de la obra
-        const OBRA_FILTRO_NOMBRE = 'El Mago'; 
+        const OBRA_FILTRO_NOMBRE = 'El Mago'; 
 
         // 💡 2. REVISA TU NÚMERO DE GESTOR
-        const MANAGER_WHATSAPP_NUMBER = '5493492594940'; 
+        const MANAGER_WHATSAPP_NUMBER = '5493492594940'; 
 
-        let timerTimeout; 
-        let todosLosCupos = {}; 
+        let timerTimeout; 
+        let todosLosCupos = {}; 
 
         // -------------------------------------------------------------------------
         // VALIDACIÓN ESTRICTA DE WHATSAPP (Solo números)
@@ -166,14 +168,14 @@
 
             messageDiv.textContent = texto;
             messageDiv.style.display = 'block';
-            messageDiv.className = 'message'; 
+            messageDiv.className = 'message'; 
 
             if (tipo === 'exito') {
-                messageDiv.style.backgroundColor = '#d4edda'; 
-                messageDiv.style.color = '#155724'; 
+                messageDiv.style.backgroundColor = '#d4edda'; 
+                messageDiv.style.color = '#155724'; 
                 setTimeout(() => {
                     messageDiv.style.display = 'none';
-                }, 8000); 
+                }, 8000); 
             } else if (tipo === 'error') {
                 messageDiv.style.backgroundColor = '#f8d7da';
                 messageDiv.style.color = '#721c24';
@@ -182,16 +184,12 @@
             }
         }
 
-        /* CARGAR NOMBRE DE OBRA Y PRECIO (Columna 1) */
+        /* CARGAR NOMBRE DE OBRA (SIN PRECIO INICIAL) */
         async function cargarNombreObra() {
             const tituloObra = document.getElementById('tituloObra');
-            const precioDiv = document.getElementById('precioUnitario'); 
-
-            if (precioDiv) {
-                precioDiv.innerHTML = 'Cargando valor...';
-            }
-
+            
             try {
+                // Obtenemos solo el nombre
                 const url = EXEC_URL + '?accion=obtenerNombre&obra=' + encodeURIComponent(OBRA_FILTRO_NOMBRE);
                 const response = await fetch(url); 
                 
@@ -205,25 +203,12 @@
                     const nuevoNombre = 'Reserva Entradas - ' + data.nombre;
                     document.title = nuevoNombre;
                     tituloObra.textContent = nuevoNombre;
-                    
-                    if (data.precio && precioDiv) {
-                        // CLAVE: Usa el texto corto "VALOR"
-                        precioDiv.innerHTML = `
-                            <span style="font-size:0.9em; display:block;">VALOR</span>
-                            <span class="precio-monto">$${data.precio}</span>
-                        `;
-                    } else {
-                        precioDiv.innerHTML = 'Valor no disponible.'; 
-                    }
-
                 } else {
                     document.title = 'Reserva de Entradas';
                     tituloObra.textContent = 'Reserva de Entradas';
-                    if (precioDiv) precioDiv.textContent = 'Obra no encontrada.';
                 }
             } catch(err) {
-                console.error('Error FATAL al cargar nombre de obra y precio:', err);
-                if (precioDiv) precioDiv.textContent = 'Error al conectar.';
+                console.error('Error FATAL al cargar nombre de obra:', err);
             }
         }
 
@@ -253,7 +238,7 @@
         }
 
         /* CARGAR OPCIONES DEL EVENTO */
-        function cargarOpcionesEventos(opciones) {
+        async function cargarOpcionesEventos(opciones) {
             const select = document.getElementById('fecha');
             select.innerHTML = '';
             const cupoDiv = document.getElementById('cupoDiv');
@@ -269,21 +254,15 @@
             opciones.forEach(opcion => {
                 const opt = document.createElement('option');
                 opt.value = opcion.id;
-
-                const cupo = todosLosCupos[opcion.id];
-
-                if (cupo === 0) {
-                    opt.textContent = opcion.texto + " (Agotado)";
-                    opt.style.color = "#b5b5b5"; 
-                } else {
-                    opt.textContent = opcion.texto;
-                    opt.style.color = "black";
-                }
-
+                opt.textContent = opcion.texto; 
                 select.appendChild(opt);
             });
 
-            actualizarCupo();
+            // CLAVE: 1. Cargamos el cupo de TODOS los eventos primero
+            await actualizarCupo(); 
+            
+            // CLAVE: 2. Forzamos la actualización de cupo y precio para el PRIMER evento seleccionado.
+            mostrarCupoSeleccionado();
         }
 
 
@@ -291,15 +270,12 @@
         async function actualizarCupo() {
             const cupoDiv = document.getElementById('cupoDiv');
             
-            cupoDiv.textContent = 'Buscando...';
-            
             try {
                 const response = await fetch(EXEC_URL + '?accion=consultarCupo'); 
                 const data = await response.json();
                 
                 if (data.status === 'OK' && data.cupos) {
                     todosLosCupos = data.cupos; 
-                    mostrarCupoSeleccionado(); 
                 } else {
                     cupoDiv.textContent = 'Error al verificar cupo.';
                 }
@@ -309,12 +285,21 @@
             }
         }
 
-        /* MOSTRAR CUPO SELECCIONADO (Columna 2) */
-        function mostrarCupoSeleccionado() {
+        /* MOSTRAR CUPO Y PRECIO SELECCIONADO (Columna 2 y 1) */
+        async function mostrarCupoSeleccionado() { 
             const selectFecha = document.getElementById('fecha');
             const idSeleccionado = selectFecha.value;
             const cupoDiv = document.getElementById('cupoDiv');
+            const precioDiv = document.getElementById('precioUnitario'); 
 
+            if (!idSeleccionado || idSeleccionado === "") {
+                 cupoDiv.textContent = 'Selecciona una función.';
+                 precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">...</span>';
+                 return;
+            }
+
+
+            // 1. Actualizar Cupo (lo hacemos con los datos que ya tenemos en 'todosLosCupos')
             if (todosLosCupos.hasOwnProperty(idSeleccionado)) {
                 const cupoRestante = todosLosCupos[idSeleccionado];
 
@@ -322,25 +307,52 @@
                     cupoDiv.textContent = '🎟️ AGOTADO';
                     cupoDiv.classList.add('agotado-rojo');
                 } else {
-                    // ✅ CLAVE: Texto corto (usando "disp.")
                     cupoDiv.textContent = `🎟️ ${cupoRestante} disp.`;
                     cupoDiv.classList.remove('agotado-rojo');
                 }
 
+                // Opciones del select: (Actualización de agotado)
                 const opciones = selectFecha.options;
                 for (let opt of opciones) {
-                    const cupo = todosLosCupos[opt.value];
+                    // Solo actualiza si es un ID válido
+                    if(todosLosCupos.hasOwnProperty(opt.value)) {
+                         const cupo = todosLosCupos[opt.value];
+                         // Limpia el texto original y agrega '(Agotado)' si es necesario
+                         const textoOriginal = opt.textContent.split(" (")[0]; 
 
-                    if (cupo === 0) {
-                        opt.textContent = opt.textContent.split(" (")[0] + " (Agotado)";
-                        opt.style.color = "#b5b5b5"; 
-                    } else {
-                        opt.textContent = opt.textContent.split(" (")[0];
-                        opt.style.color = "black";
+                         if (cupo === 0) {
+                            opt.textContent = textoOriginal + " (Agotado)";
+                            opt.style.color = "#b5b5b5"; 
+                         } else {
+                            opt.textContent = textoOriginal;
+                            opt.style.color = "black";
+                         }
                     }
                 }
+                
+                // 2. Actualizar Precio Específico del Evento (Llamada al servidor)
+                try {
+                    precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">...</span>';
+                    const url = EXEC_URL + '?accion=obtenerPrecio&idEvento=' + encodeURIComponent(idSeleccionado);
+                    const response = await fetch(url);
+                    const data = await response.json();
+
+                    if (data.status === 'OK' && data.precio) {
+                        precioDiv.innerHTML = `
+                            <span style="font-size:0.9em; display:block;">VALOR</span>
+                            <span class="precio-monto">$${data.precio}</span>
+                        `;
+                    } else {
+                        precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">N/A</span>';
+                    }
+                } catch (error) {
+                    console.error('Error al actualizar precio:', error);
+                    precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">Error</span>';
+                }
+                
             } else {
                 cupoDiv.textContent = 'Selecciona una función.';
+                precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">...</span>';
             }
         }
 
@@ -349,20 +361,12 @@
             mostrarMensaje(''); 
 
             const nombre = document.getElementById('nombre').value.trim();
-            // Limpia caracteres no numéricos
             const telefonoCliente = document.getElementById('telefono').value.trim().replace(/\D/g,''); 
             const cantidad = parseInt(document.getElementById('cantidad').value);
             const fecha = document.getElementById('fecha').value; 
 
-            // ✅ VALIDACIÓN 1: Campos vacíos
             if (!nombre || !telefonoCliente || !cantidad || !fecha) {
                 mostrarMensaje('💡 Completa todos los campos.', 'error');
-                return;
-            }
-            
-            // ✅ VALIDACIÓN 2: Longitud del Teléfono (Mínimo 8 dígitos) - ÚNICA CORRECCIÓN APLICADA
-            if (telefonoCliente.length < 8) {
-                mostrarMensaje('❌ El número de WhatsApp no parece ser válido. Debe tener al menos 8 dígitos.', 'error');
                 return;
             }
 
@@ -372,6 +376,14 @@
                 mostrarMensaje('❌ Error de validación de formulario.', 'error');
                 return; 
             }
+
+            // Verifica que haya cupo (doble chequeo)
+            const cupoActual = todosLosCupos[fecha] || 0;
+            if (cantidad > cupoActual) {
+                 mostrarMensaje(`Solo quedan ${cupoActual} entradas. Ajusta la cantidad.`, 'error');
+                 return;
+            }
+
 
             const formData = new URLSearchParams();
             formData.append('accion', 'reservar');
@@ -407,7 +419,8 @@
                     
                     window.open(`https://wa.me/${MANAGER_WHATSAPP_NUMBER}?text=${mensajeURL}`, '_blank');
                     
-                    actualizarCupo();
+                    // Actualiza cupo después de reservar
+                    actualizarCupo().then(() => mostrarCupoSeleccionado()); 
                 } else {
                     mostrarMensaje('❌ ' + data.message, 'error');
                     startTimer(); 
@@ -429,6 +442,7 @@
         // *** 4. INICIAR LAS FUNCIONES AL CARGAR ***
         cargarNombreObra(); 
         startTimer(); 
+        // Primero cargamos las opciones de fecha/evento
         fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTRO_NOMBRE))
             .then(response => response.json())
             .then(data => cargarOpcionesEventos(data))
@@ -439,6 +453,3 @@
     </script>
 </body>
 </html>
-
-
-
