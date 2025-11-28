@@ -104,7 +104,7 @@
         </div>
 
         <div class="form-group">
-            <label>Tu WhatsApp (Sin 0 ni 15):</label>
+            <label>Tu WhatsApp (Sólo números, sin 0 ni 15):</label> 
             <input type="tel" id="telefono" placeholder="Ej: 3415123456" onkeypress="return isNumberKey(event)">
         </div>
 
@@ -348,12 +348,20 @@
             mostrarMensaje(''); 
 
             const nombre = document.getElementById('nombre').value.trim();
+            // Limpia caracteres no numéricos
             const telefonoCliente = document.getElementById('telefono').value.trim().replace(/\D/g,''); 
             const cantidad = parseInt(document.getElementById('cantidad').value);
             const fecha = document.getElementById('fecha').value; 
 
+            // ✅ VALIDACIÓN 1: Campos vacíos
             if (!nombre || !telefonoCliente || !cantidad || !fecha) {
                 mostrarMensaje('💡 Completa todos los campos.', 'error');
+                return;
+            }
+            
+            // ✅ VALIDACIÓN 2: Longitud del Teléfono (Mínimo 8 dígitos) - ÚNICA CORRECCIÓN APLICADA
+            if (telefonoCliente.length < 8) {
+                mostrarMensaje('❌ El número de WhatsApp no parece ser válido. Debe tener al menos 8 dígitos.', 'error');
                 return;
             }
 
@@ -430,4 +438,3 @@
     </script>
 </body>
 </html>
-
