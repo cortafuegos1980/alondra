@@ -7,16 +7,27 @@
     
     <style>
         /* Estilos Globales */
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f0f0f0; }
-        .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        /* Añadido un estilo para los inputs inválidos (solo si falla la validación de pattern o required) */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: #333; }
+        
+        /* Estilo de validación */
         input:invalid:not(:focus), select:invalid:not(:focus) { 
-            border: 1px solid #D32F2F; 
-            box-shadow: 0 0 5px rgba(211, 47, 47, 0.5);
+            border: 2px solid #D32F2F; /* Borde más visible */
         }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        input, select { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ccc; 
+            border-radius: 5px; 
+            box-sizing: border-box; 
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus {
+            border-color: #25D366;
+            outline: none;
+        }
 
         /* Anti-spam */
         .honeypot { display: none; visibility: hidden; height: 0; width: 0; position: absolute; left: -9999px; }
@@ -25,30 +36,30 @@
         #contenedor-superior {
             display: flex;
             justify-content: space-between;
-            align-items: stretch; 
             flex-wrap: wrap; 
             margin-bottom: 20px;
+            gap: 5px; /* Separación más limpia */
         }
 
         /* Estilo general de las 3 cajas */
         .caja-estado-superior {
-            padding: 5px 10px;
-            border: 1px solid #ddd;
+            padding: 8px 10px; /* Más padding */
+            border: 1px solid #e0e0e0;
             border-radius: 6px;
-            background-color: #f9f9f9; 
-            margin: 5px;
+            background-color: #fcfcfc; 
             text-align: center;
             flex-grow: 1; 
-            flex-basis: 0; 
-            font-weight: 600; 
+            flex-basis: calc(33.33% - 10px); /* Asegurar que sean 3 columnas */
+            font-size: 0.9em;
+            font-weight: 500;
         }
 
-        /* Estilo de la caja de Precio */
+        .precio-label { font-size: 0.9em; display:block; color: #666; }
         .precio-monto {
-            font-size: 1.2em; 
+            font-size: 1.3em; 
             color: #000; 
             display: block;
-            margin-top: 3px; 
+            margin-top: 2px; 
             font-weight: bold;
         }
 
@@ -58,7 +69,7 @@
         }
 
         /* --- ESTILOS DEL BOTÓN RESERVAR --- */
-        button { 
+        #btnReservar { 
             width: 100%; 
             padding: 15px; 
             background: #25D366; 
@@ -68,31 +79,31 @@
             font-size: 16px; 
             font-weight: bold; 
             cursor: pointer; 
-            transition: background 0.3s; 
-            margin-top: 5px; 
+            transition: background 0.3s, opacity 0.3s; 
+            margin-top: 10px; 
         }
         
-        button:disabled {
+        #btnReservar:hover:not(:disabled) {
+            background: #1da851;
+        }
+
+        #btnReservar:disabled, #btnReservar.loading {
             background: #cccccc; 
             color: #666666; 
             cursor: not-allowed; 
             opacity: 0.8; 
             box-shadow: none;
         }
-        
-        button.loading { 
-            background: #cccccc; 
-            cursor: not-allowed; 
-        }
 
         /* --- ESTILOS DEL MENSAJE DE ESTADO --- */
         .message { 
-            padding: 12px; 
+            padding: 15px; 
             border-radius: 8px; 
-            margin: 15px 5px 20px 5px; 
+            margin: 15px 0 20px 0; /* Ajuste de margen */
             display: none; 
             text-align: center; 
             font-size: 1.0em;
+            line-height: 1.4;
         }
 
         /* Clase para errores */
@@ -100,7 +111,7 @@
             background-color: #f8d7da; 
             color: #721c24; 
             border: 1px solid #f5c6cb;
-            font-weight: bold;
+            font-weight: 600;
         }
 
         /* Clase para éxito */
@@ -119,7 +130,7 @@
         <div id="contenedor-superior">
             
             <div id="precioUnitario" class="caja-estado-superior">
-                <span style="font-size:0.9em; display:block;">VALOR</span> 
+                <span class="precio-label">VALOR</span> 
                 <span class="precio-monto">Cargando...</span>
             </div> 
             
@@ -153,6 +164,8 @@
                     maxlength="15" 
                     pattern="[0-9]{8,15}" 
                     title="Ingresa entre 8 y 15 dígitos numéricos sin 0 ni 15."
+                    data-min-length="8"
+                    data-max-length="15"
                 >
             </div>
 
@@ -178,18 +191,11 @@
     
     <script>
         // *** 1. CONFIGURACIÓN CRUCIAL ***
-        // 💡 1. URL DE APPS SCRIPT (Cambiado con la URL que proporcionaste)
+        // 💡 1. URL DE APPS SCRIPT
         const EXEC_URL = 'https://script.google.com/macros/s/AKfycbxouqas6Wvyf5gWWtPjHnUSfMcqgr__uBYah00v1tVhsqDAVgTR_dRZ5r5bBG_Fjm7e/exec'; 
-
-        // Filtro de la obra
-        const OBRA_FILTRO_NOMBRE = 'La Jirafa'; 
-
-        // 💡 2. REVISA TU NÚMERO DE GESTOR
-        const MANAGER_WHATSAPP_NUMBER = '5493492594940'; 
         
-        // 🌟 CONFIGURACIÓN DE VALIDACIÓN DEL MÓVIL
-        const MIN_CELULAR_LENGTH = 8;
-        const MAX_CELULAR_LENGTH = 15; 
+        const OBRA_FILTRO_NOMBRE = 'La Jirafa'; 
+        const MANAGER_WHATSAPP_NUMBER = '5493492594940'; 
 
         let timerTimeout; 
         let todosLosCupos = {}; 
@@ -201,40 +207,42 @@
             btnReservar: document.getElementById('btnReservar'),
             fecha: document.getElementById('fecha'),
             cupoDiv: document.getElementById('cupoDiv'),
-            precioDiv: document.getElementById('precioUnitario'),
+            precioDiv: document.getElementById('precioUnitario').querySelector('.precio-monto'),
             timerDiv: document.getElementById('timerDiv'),
             formReserva: document.getElementById('formReserva'), 
-            // Campos del formulario
             nombre: document.getElementById('nombre'),
             telefono: document.getElementById('telefono'),
             cantidad: document.getElementById('cantidad'),
             apellidoBot: document.getElementById('apellidoBot')
         };
+        
+        // 🌟 MEJORA: Lee las configuraciones de longitud desde el data-attribute del input
+        const MIN_CELULAR_LENGTH = parseInt(DOM_ELEMENTS.telefono.dataset.minLength, 10) || 8;
+        const MAX_CELULAR_LENGTH = parseInt(DOM_ELEMENTS.telefono.dataset.maxLength, 10) || 15;
+
 
         // -------------------------------------------------------------------------
         // VALIDACIÓN ESTRICTA DE WHATSAPP (Solo números)
         // -------------------------------------------------------------------------
         function isNumberKey(evt) {
             const charCode = (evt.which) ? evt.which : event.keyCode;
-            // Permitir solo números (48-57)
             return !(charCode > 31 && (charCode < 48 || charCode > 57));
         }
 
 
-        /* Función para mostrar mensajes de estado (LIMPIA Y USA CLASES CSS) */
+        /* Función para mostrar mensajes de estado */
         function mostrarMensaje(texto, tipo = 'error') {
             const messageDiv = DOM_ELEMENTS.message;
             
             if (!texto) {
                 messageDiv.style.display = 'none';
-                messageDiv.className = 'message'; // Limpiar clases
+                messageDiv.className = 'message'; 
                 return;
             }
 
             messageDiv.textContent = texto;
             messageDiv.style.display = 'block';
             messageDiv.className = 'message'; 
-            messageDiv.style.textTransform = 'none'; 
 
             if (tipo === 'exito') {
                 messageDiv.classList.add('message-success');
@@ -246,40 +254,46 @@
                 messageDiv.classList.add('message-error');
             }
         }
-
-        /* CARGAR NOMBRE DE OBRA */
-        async function cargarNombreObra() {
-            const tituloObra = DOM_ELEMENTS.tituloObra;
+        
+        /* Función de utilidad para peticiones GET */
+        async function fetchData(action, params = {}) {
+            const query = new URLSearchParams({ accion: action, ...params }).toString();
+            const url = `${EXEC_URL}?${query}`;
             
             try {
-                const url = EXEC_URL + '?accion=obtenerNombre&obra=' + encodeURIComponent(OBRA_FILTRO_NOMBRE);
                 const response = await fetch(url); 
-                
                 if (!response.ok) { 
-                    throw new Error(`Error HTTP: ${response.status}`); 
+                    throw new Error(`Error HTTP: ${response.status} al obtener ${action}`); 
                 }
-                
-                const data = await response.json();
-                
-                if (data.status === 'OK' && data.nombre) {
-                    const nuevoNombre = 'Reserva Entradas - ' + data.nombre;
-                    document.title = nuevoNombre;
-                    tituloObra.textContent = nuevoNombre;
-                } else {
-                    document.title = 'Reserva de Entradas';
-                    tituloObra.textContent = 'Reserva de Entradas';
-                }
+                return await response.json();
             } catch(err) {
-                console.error('Error FATAL al cargar nombre de obra:', err);
+                console.error(`Error en fetchData (${action}):`, err);
+                return { status: 'ERROR', message: err.message };
+            }
+        }
+
+
+        /* CARGAR NOMBRE DE OBRA (Simplificado con fetchData) */
+        async function cargarNombreObra() {
+            const data = await fetchData('obtenerNombre', { obra: OBRA_FILTRO_NOMBRE });
+            
+            if (data.status === 'OK' && data.nombre) {
+                const nuevoNombre = 'Reserva Entradas - ' + data.nombre;
+                document.title = nuevoNombre;
+                DOM_ELEMENTS.tituloObra.textContent = nuevoNombre;
+            } else {
+                document.title = 'Reserva de Entradas';
+                DOM_ELEMENTS.tituloObra.textContent = 'Reserva de Entradas';
             }
         }
 
         
-        /* TEMPORIZADOR (Columna 3) */
+        /* TEMPORIZADOR */
         function startTimer() {
-            let duration = 5 * 60; // 5 minutos de producción
+            let duration = 5 * 60; 
             const { timerDiv, btnReservar } = DOM_ELEMENTS;
             
+            // Lógica inicial del botón
             if (btnReservar) {
                 btnReservar.disabled = false;
                 btnReservar.classList.remove('loading');
@@ -291,18 +305,14 @@
                 const minutes = parseInt(duration / 60, 10);
                 const seconds = parseInt(duration % 60, 10);
 
-                const displayMinutes = minutes < 10 ? "0" + minutes : minutes;
-                const displaySeconds = seconds < 10 ? "0" + seconds : seconds;
+                const displayMinutes = String(minutes).padStart(2, '0');
+                const displaySeconds = String(seconds).padStart(2, '0');
 
                 timerDiv.textContent = "⏱️ " + displayMinutes + ":" + displaySeconds; 
 
                 if (--duration < 0) {
                     clearInterval(timerTimeout); 
-                    
-                    if (btnReservar) {
-                        btnReservar.disabled = true; 
-                    }
-                    
+                    if (btnReservar) btnReservar.disabled = true; 
                     timerDiv.textContent = "⏱️ 00:00";
                     mostrarMensaje('⏰ Tiempo agotado. Debes actualizar la página para iniciar una nueva reserva.', 'error'); 
                 }
@@ -312,90 +322,74 @@
             timerTimeout = setInterval(updateTimer, 1000);
         }
         
-        /* CARGAR OPCIONES DEL EVENTO */
-        async function cargarOpcionesEventos(opciones) {
+        /* CARGAR OPCIONES DEL EVENTO (Optimizado) */
+        function cargarOpcionesEventos(opciones) {
             const { fecha: select, cupoDiv } = DOM_ELEMENTS;
-            select.innerHTML = '';
-
+            
             if (opciones.length === 0) {
-                const opt = document.createElement('option');
-                opt.textContent = "No hay eventos disponibles";
-                select.appendChild(opt);
+                select.innerHTML = '<option>No hay eventos disponibles</option>';
                 cupoDiv.textContent = 'No hay eventos configurados.';
                 return;
             }
 
-            opciones.forEach(opcion => {
-                const opt = document.createElement('option');
-                opt.value = opcion.id;
-                opt.textContent = opcion.texto; 
-                select.appendChild(opt);
-            });
+            // 🌟 MEJORA: Construcción de opciones con map/join para un mejor rendimiento DOM
+            const opcionesHTML = opciones.map(opcion => 
+                `<option value="${opcion.id}">${opcion.texto}</option>`
+            ).join('');
 
-            await actualizarCupo(); 
-            mostrarCupoSeleccionado();
+            select.innerHTML = opcionesHTML;
+            
+            // Llamar a actualizar cupo para el primer elemento
+            actualizarCupo().then(mostrarCupoSeleccionado);
         }
 
 
         /* ACTUALIZAR CUPO (Llamada al servidor) */
         async function actualizarCupo() {
-            const cupoDiv = DOM_ELEMENTS.cupoDiv;
+            const data = await fetchData('consultarCupo');
             
-            try {
-                const response = await fetch(EXEC_URL + '?accion=consultarCupo'); 
-                const data = await response.json();
-                
-                if (data.status === 'OK' && data.cupos) {
-                    todosLosCupos = data.cupos; 
-                } else {
-                    cupoDiv.textContent = 'Error al verificar cupo.';
-                }
-            } catch(err) {
-                console.error('Error al consultar cupo:', err);
-                cupoDiv.textContent = 'Error de conexión.';
+            if (data.status === 'OK' && data.cupos) {
+                todosLosCupos = data.cupos; 
+            } else {
+                DOM_ELEMENTS.cupoDiv.textContent = 'Error al verificar cupo.';
             }
         }
 
 
-        /* MOSTRAR CUPO Y PRECIO SELECCIONADO (CLAVE LIMPIA Y CORREGIDA) */
+        /* MOSTRAR CUPO Y PRECIO SELECCIONADO (Optimizado y Limpio) */
         async function mostrarCupoSeleccionado() { 
             const { fecha: selectFecha, cupoDiv, precioDiv, btnReservar, timerDiv } = DOM_ELEMENTS;
             const idSeleccionado = selectFecha.value;
             
             
-            // 🛑 1. VERIFICAR SI EL TIEMPO ESTÁ AGOTADO (Prioridad 1)
             if (timerDiv.textContent.includes('00:00')) {
-                if (btnReservar) btnReservar.disabled = true;
+                btnReservar.disabled = true;
                 return; 
             }
             
-            // 2. ESTADO INICIAL (Cuando no hay nada seleccionado)
             if (!idSeleccionado || idSeleccionado === "") {
                 cupoDiv.textContent = 'Selecciona una función.';
-                precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">...</span>';
-                if (btnReservar) btnReservar.disabled = true; 
+                precioDiv.textContent = '...';
+                btnReservar.disabled = true; 
                 return;
             }
 
-
-            // 3. ACTUALIZAR CUPO, ESTADO Y BOTÓN
             if (todosLosCupos.hasOwnProperty(idSeleccionado)) {
                 const cupoRestante = todosLosCupos[idSeleccionado];
 
                 if (cupoRestante === 0) {
                     cupoDiv.textContent = '🎟️ AGOTADO';
                     cupoDiv.classList.add('agotado-rojo');
-                    if (btnReservar) btnReservar.disabled = true; 
+                    btnReservar.disabled = true; 
                 } else {
                     cupoDiv.textContent = `🎟️ ${cupoRestante} disp.`;
                     cupoDiv.classList.remove('agotado-rojo');
-                    if (btnReservar) btnReservar.disabled = false; 
+                    btnReservar.disabled = false; 
                 }
 
-                // 3.1. Actualización de opciones del select (gris para agotados)
-                const opciones = selectFecha.options;
-                for (let opt of opciones) {
-                    if(todosLosCupos.hasOwnProperty(opt.value)) {
+                // Actualización del SELECT (Lógica refactorizada)
+                Array.from(selectFecha.options).forEach(opt => {
+                    if (todosLosCupos.hasOwnProperty(opt.value)) {
                         const cupo = todosLosCupos[opt.value];
                         let textoLimpio = opt.textContent.replace(' (Agotado)', '').trim();
 
@@ -407,32 +401,22 @@
                             opt.style.color = "black";
                         }
                     }
-                }
+                });
                 
-                // 4. ACTUALIZAR PRECIO (Llamada al servidor)
-                try {
-                    precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">...</span>';
-                    const url = EXEC_URL + '?accion=obtenerPrecio&idEvento=' + encodeURIComponent(idSeleccionado);
-                    const response = await fetch(url);
-                    const data = await response.json();
+                // Actualizar PRECIO
+                precioDiv.textContent = '...';
+                const dataPrecio = await fetchData('obtenerPrecio', { idEvento: idSeleccionado });
 
-                    if (data.status === 'OK' && data.precio) {
-                        precioDiv.innerHTML = `
-                            <span style="font-size:0.9em; display:block;">VALOR</span>
-                            <span class="precio-monto">$${data.precio}</span>
-                        `;
-                    } else {
-                        precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">N/A</span>';
-                    }
-                } catch (error) {
-                    console.error('Error al actualizar precio:', error);
-                    precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">Error</span>';
+                if (dataPrecio.status === 'OK' && dataPrecio.precio) {
+                    precioDiv.textContent = `$${dataPrecio.precio}`;
+                } else {
+                    precioDiv.textContent = 'N/A';
                 }
                 
             } else {
                 cupoDiv.textContent = 'Selecciona una función.';
-                precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">...</span>';
-                if (btnReservar) btnReservar.disabled = true; 
+                precioDiv.textContent = '...';
+                btnReservar.disabled = true; 
             }
         }
 
@@ -447,7 +431,6 @@
             const { btnReservar: btn, nombre, telefono, cantidad, fecha, apellidoBot } = DOM_ELEMENTS;
 
             const nombreVal = nombre.value.trim();
-            // Limpiar el teléfono de cualquier caracter que no sea dígito
             const telefonoCliente = telefono.value.trim().replace(/\D/g,''); 
             const cantidadVal = parseInt(cantidad.value);
             const fechaVal = fecha.value; 
@@ -458,25 +441,21 @@
                 return;
             }
             
-            // 🌟 VALIDACIÓN ESTRICTA PARA LA LONGITUD DEL TELÉFONO
             if (telefonoCliente.length < MIN_CELULAR_LENGTH || telefonoCliente.length > MAX_CELULAR_LENGTH) {
                 mostrarMensaje(`El número de WhatsApp debe tener entre ${MIN_CELULAR_LENGTH} y ${MAX_CELULAR_LENGTH} dígitos (solo números).`, 'error');
                 return;
             }
-            // 🌟 FIN VALIDACIÓN
 
             if (btn.disabled) {
                 mostrarMensaje('⏰ Tiempo de reserva agotado o evento sin cupo. Actualiza la página para comenzar de nuevo.', 'error');
                 return; 
             }
 
-            // VALIDACIÓN HONEYPOT (ANTI-SPAM)
             if (apellidoBot.value.trim().length > 0) {
                 mostrarMensaje('❌ Error de validación de formulario.', 'error');
                 return; 
             }
 
-            // Verifica que haya cupo (doble chequeo)
             const cupoActual = todosLosCupos[fechaVal] || 0;
             if (cantidadVal > cupoActual) {
                 mostrarMensaje(`Solo quedan ${cupoActual} entradas. Ajusta la cantidad.`, 'error');
@@ -491,10 +470,9 @@
             formData.append('cantidad', cantidadVal);
             formData.append('fecha', fechaVal); 
 
-            // Desactivamos y mostramos carga ANTES de la llamada
             btn.disabled = true;
             btn.classList.add('loading');
-            clearInterval(timerTimeout); // Detenemos el contador
+            clearInterval(timerTimeout); 
 
 
             try {
@@ -520,13 +498,13 @@
                     
                     window.open(`https://wa.me/${MANAGER_WHATSAPP_NUMBER}?text=${mensajeURL}`, '_blank');
                     
-                    actualizarCupo().then(() => mostrarCupoSeleccionado());
+                    actualizarCupo().then(mostrarCupoSeleccionado);
                     
                     btn.disabled = true; 
                     btn.classList.remove('loading');
                     
                 } else {
-                    mostrarMensaje('❌ ' + data.message, 'error');
+                    mostrarMensaje('❌ ' + (data.message || 'Error desconocido del servidor.'), 'error');
                     btn.disabled = false;
                     btn.classList.remove('loading');
                     startTimer(); 
@@ -547,11 +525,18 @@
         // *** 4. INICIAR LAS FUNCIONES AL CARGAR (Solo una vez) ***
         cargarNombreObra(); 
         startTimer(); 
-        fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTRO_NOMBRE))
-            .then(response => response.json())
-            .then(data => cargarOpcionesEventos(data))
+        
+        // Carga inicial de eventos usando la nueva función de utilidad
+        fetchData('obtenerOpciones', { obra: OBRA_FILTRO_NOMBRE })
+            .then(data => {
+                if (data.status === 'OK' && data.length !== undefined) {
+                    cargarOpcionesEventos(data);
+                } else {
+                    DOM_ELEMENTS.cupoDiv.textContent = 'Error al cargar opciones de eventos.';
+                }
+            })
             .catch(err => {
-                console.error('Error FATAL al cargar eventos (EXEC_URL incorrecta?):', err);
+                console.error('Error FATAL al cargar eventos:', err);
                 DOM_ELEMENTS.cupoDiv.textContent = 'Error crítico al cargar eventos. Verifique la URL de Apps Script.';
             });
     </script>
