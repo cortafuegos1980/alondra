@@ -7,19 +7,16 @@
     
     <style>
         /* Estilos Globales */
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f0f0f0; }
         .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; }
         input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        .message { padding: 10px; border-radius: 5px; margin-bottom: 15px; display: none; }
 
         /* Anti-spam */
         .honeypot { display: none; visibility: hidden; height: 0; width: 0; position: absolute; left: -9999px; }
 
-        /* --- ESTILOS COMPACTOS FINALES (3 COLUMNAS UNIFORMES) --- */
-
-        /* Contenedor principal para organizar las 3 cajas lado a lado */
+        /* --- ESTILOS SUPERIORES (3 COLUMNAS) --- */
         #contenedor-superior {
             display: flex;
             justify-content: space-between;
@@ -28,7 +25,7 @@
             margin-bottom: 20px;
         }
 
-        /* Aplica a las cajas de Tiempo y Cupo */
+        /* Estilo general de las 3 cajas */
         .caja-estado-superior {
             padding: 5px 10px;
             border: 1px solid #ddd;
@@ -38,23 +35,10 @@
             text-align: center;
             flex-grow: 1; 
             flex-basis: 0; 
-        }
-
-        /* Estilo de la caja de Precio */
-        .precio-caja {
-            padding: 5px 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            background-color: #f9f9f9; 
-            font-size: 0.9em;
-            color: #555; 
             font-weight: 600; 
-            flex-grow: 1;
-            flex-basis: 0; 
-            margin: 5px;
-            text-align: center;
         }
 
+        /* Estilo de la caja de Precio (es la misma base pero renombrada a caja-estado-superior) */
         .precio-monto {
             font-size: 1.2em; 
             color: #000; 
@@ -63,64 +47,63 @@
             font-weight: bold;
         }
 
-        /* Estilo para el texto dentro de la caja de estado */
-        .info-estado {
-            font-size: 0.9em;
-            font-weight: bold;
-            margin: 3px 0; 
-        }
-
         .agotado-rojo {
             color: #D32F2F; 
             font-weight: bold;
         }
 
-        /* ESTILOS DEL BOTÓN RESERVAR */
+        /* --- ESTILOS DEL BOTÓN RESERVAR --- */
         button { 
             width: 100%; 
             padding: 15px; 
-            background: #25D366; /* Verde de WhatsApp (activo) */
+            background: #25D366; 
             color: white; 
             border: none; 
             border-radius: 5px; 
             font-size: 16px; 
             font-weight: bold; 
             cursor: pointer; 
-            transition: background 0.3s; /* Añadido para un cambio de color suave */
+            transition: background 0.3s; 
+            margin-top: 5px; /* Pequeño margen superior */
         }
         
-        /* ESTILO PARA CUANDO EL BOTÓN ESTÉ DESHABILITADO (Tiempo agotado o Cupo 0) */
         button:disabled {
-            background: #cccccc; /* Gris claro */
-            color: #666666;      /* Texto gris oscuro */
+            background: #cccccc; 
+            color: #666666; 
             cursor: not-allowed; 
-            opacity: 0.8;        /* Opcional: baja un poco la opacidad */
+            opacity: 0.8; 
             box-shadow: none;
         }
         
-        button.loading { /* Estilo para cuando está enviando datos */
+        button.loading { 
             background: #cccccc; 
             cursor: not-allowed; 
         }
-/* ... dentro de tu bloque <style> ... */
 
-/* Estilo general del mensaje */
-.message { 
-    padding: 12px; /* Un poco más de espacio */
-    border-radius: 8px; /* Bordes más suaves */
-    margin: 15px 5px 20px 5px; /* Margen para separarlo del formulario y las cajas */
-    display: none; 
-    text-align: center; /* Centramos el texto */
-    font-size: 1.0em;
-}
+        /* --- ESTILOS DEL MENSAJE DE ESTADO (OPTIMIZADO CON CLASES) --- */
+        .message { 
+            padding: 12px; 
+            border-radius: 8px; 
+            margin: 15px 5px 20px 5px; 
+            display: none; 
+            text-align: center; 
+            font-size: 1.0em;
+        }
 
-/* Estilo específico para errores (rojo) */
-.message[style*="background-color: rgb(248, 215, 218)"] { /* Este es el color del error #f8d7da */
-    border: 1px solid #f5c6cb; /* Borde suave para definirlo */
-    font-weight: bold;
-    text-transform: none; /* Quitamos el uppercase que no se veía prolijo */
-}
-        
+        /* Clase para errores */
+        .message-error {
+            background-color: #f8d7da; /* Rojo suave */
+            color: #721c24; /* Texto rojo oscuro */
+            border: 1px solid #f5c6cb;
+            font-weight: bold;
+        }
+
+        /* Clase para éxito */
+        .message-success {
+            background-color: #d4edda; 
+            color: #155724; 
+            border: 1px solid #c3e6cb;
+        }
     </style>
 </head>
 <body>
@@ -130,7 +113,7 @@
 
         <div id="contenedor-superior">
             
-            <div id="precioUnitario" class="precio-caja">
+            <div id="precioUnitario" class="caja-estado-superior">
                 <span style="font-size:0.9em; display:block;">VALOR</span> 
                 <span class="precio-monto">Cargando...</span>
             </div> 
@@ -144,35 +127,38 @@
             </div>
             
         </div>
+        
         <div id="message" class="message"></div>
         
-        <div class="form-group">
-            <label>Apellido y Nombre:</label>
-            <input type="text" id="nombre" placeholder="Ej: María González">
-        </div>
+        <form id="formReserva">
+            <div class="form-group">
+                <label for="nombre">Apellido y Nombre:</label>
+                <input type="text" id="nombre" placeholder="Ej: María González" required>
+            </div>
 
-        <div class="form-group">
-            <label>Tu WhatsApp (Sin 0 ni 15):</label>
-            <input type="tel" id="telefono" placeholder="Ej: 3415123456" onkeypress="return isNumberKey(event)">
-        </div>
+            <div class="form-group">
+                <label for="telefono">Tu WhatsApp (Sin 0 ni 15):</label>
+                <input type="tel" id="telefono" placeholder="Ej: 3415123456" onkeypress="return isNumberKey(event)" required>
+            </div>
 
-        <div class="form-group">
-            <label>Cantidad:</label>
-            <input type="number" id="cantidad" min="1" max="10" value="1">
-        </div>
+            <div class="form-group">
+                <label for="cantidad">Cantidad:</label>
+                <input type="number" id="cantidad" min="1" max="10" value="1" required>
+            </div>
 
-        <div class="form-group">
-            <label>Fecha del Evento:</label>
-            <select id="fecha">
-            </select>
-        </div>
+            <div class="form-group">
+                <label for="fecha">Fecha del Evento:</label>
+                <select id="fecha" required>
+                </select>
+            </div>
 
-        <div class="form-group honeypot">
-            <label for="apellidoBot">No llenar este campo:</label>
-            <input type="text" id="apellidoBot" name="apellidoBot">
-        </div>
+            <div class="form-group honeypot">
+                <label for="apellidoBot">No llenar este campo:</label>
+                <input type="text" id="apellidoBot" name="apellidoBot">
+            </div>
 
-        <button id="btnReservar">Reservar</button>
+            <button type="submit" id="btnReservar">Reservar</button>
+        </form>
     </div>
     
     <script>
@@ -194,38 +180,33 @@
         // -------------------------------------------------------------------------
         function isNumberKey(evt) {
             const charCode = (evt.which) ? evt.which : event.keyCode;
-            
-            if (charCode > 31 && (charCode < 48 || charCode > 57)) {
-                return false;
-            }
-            return true;
+            return !(charCode > 31 && (charCode < 48 || charCode > 57));
         }
 
 
-        /* Función para mostrar mensajes de estado */
+        /* Función para mostrar mensajes de estado (LIMPIA Y USA CLASES CSS) */
         function mostrarMensaje(texto, tipo = 'error') {
             const messageDiv = document.getElementById('message');
             
             if (!texto) {
                 messageDiv.style.display = 'none';
+                messageDiv.className = 'message'; // Limpiar clases
                 return;
             }
 
             messageDiv.textContent = texto;
             messageDiv.style.display = 'block';
             messageDiv.className = 'message'; 
+            messageDiv.style.textTransform = 'none'; // Aseguramos que no haya mayúsculas forzadas
 
             if (tipo === 'exito') {
-                messageDiv.style.backgroundColor = '#d4edda'; 
-                messageDiv.style.color = '#155724'; 
+                messageDiv.classList.add('message-success');
                 setTimeout(() => {
                     messageDiv.style.display = 'none';
+                    messageDiv.className = 'message';
                 }, 8000); 
             } else if (tipo === 'error') {
-                messageDiv.style.backgroundColor = '#f8d7da';
-                messageDiv.style.color = '#721c24';
-                messageDiv.style.fontWeight = 'bold';
-                messageDiv.style.textTransform = 'uppercase';
+                messageDiv.classList.add('message-error');
             }
         }
 
@@ -234,7 +215,6 @@
             const tituloObra = document.getElementById('tituloObra');
             
             try {
-                // Obtenemos solo el nombre
                 const url = EXEC_URL + '?accion=obtenerNombre&obra=' + encodeURIComponent(OBRA_FILTRO_NOMBRE);
                 const response = await fetch(url); 
                 
@@ -260,17 +240,17 @@
         
         /* TEMPORIZADOR (Columna 3) */
         function startTimer() {
-            let duration = 0.25 * 60; // 15 segundos (Cámbialo a 5 * 60 para 5 minutos de producción)
+            let duration = 5 * 60; // 5 minutos de producción (tu código tenía 0.25 * 60 para pruebas)
             const timerDiv = document.getElementById('timerDiv');
-            // CLAVE 1: Obtener la referencia al botón
             const btn = document.getElementById('btnReservar'); 
             
-            // CLAVE 2: Asegurar que el botón esté activo al iniciar la página/contador
             if (btn) {
                 btn.disabled = false;
-                // También quitamos la clase 'loading' si quedó de la reserva anterior
                 btn.classList.remove('loading');
             }
+
+            // Si hay un temporizador activo, lo limpiamos antes de empezar uno nuevo
+            if (timerTimeout) clearInterval(timerTimeout); 
 
             function updateTimer() {
                 const minutes = parseInt(duration / 60, 10);
@@ -284,7 +264,6 @@
                 if (--duration < 0) {
                     clearInterval(timerTimeout); 
                     
-                    // CLAVE 3: Usar la variable 'btn' para deshabilitar si existe
                     if (btn) {
                         btn.disabled = true; 
                     }
@@ -294,7 +273,8 @@
                 }
             }
             
-            if (timerTimeout) clearInterval(timerTimeout); 
+            // Forzar una actualización inmediata
+            updateTimer(); 
             timerTimeout = setInterval(updateTimer, 1000);
         }
         
@@ -319,10 +299,10 @@
                 select.appendChild(opt);
             });
 
-            // CLAVE: 1. Cargamos el cupo de TODOS los eventos primero
+            // 1. Cargamos el cupo de TODOS los eventos primero
             await actualizarCupo(); 
             
-            // CLAVE: 2. Forzamos la actualización de cupo y precio para el PRIMER evento seleccionado.
+            // 2. Forzamos la actualización de cupo y precio para el PRIMER evento seleccionado.
             mostrarCupoSeleccionado();
         }
 
@@ -347,125 +327,118 @@
         }
 
 
-       /* MOSTRAR CUPO Y PRECIO SELECCIONADO (Columna 2 y 1) */
-async function mostrarCupoSeleccionado() { 
-    const selectFecha = document.getElementById('fecha');
-    const idSeleccionado = selectFecha.value;
-    const cupoDiv = document.getElementById('cupoDiv');
-    const precioDiv = document.getElementById('precioUnitario'); 
-    const btnReservar = document.getElementById('btnReservar'); 
-    const timerDiv = document.getElementById('timerDiv'); // <-- Nuevo: Obtenemos el div del temporizador
-    
-    
-    // 🛑 CLAVE 1: VERIFICAR SI EL TIEMPO ESTÁ AGOTADO
-    if (timerDiv.textContent.includes('00:00')) {
-        // Si el tiempo se agotó, el botón DEBE permanecer deshabilitado.
-        if (btnReservar) btnReservar.disabled = true;
-        
-        // También mostramos el mensaje de tiempo agotado si ya no está visible
-        // para recordar al usuario por qué no puede reservar.
-        if (document.getElementById('message').style.display === 'none') {
-             mostrarMensaje('⏰ Tiempo agotado. Debes actualizar la página para iniciar una nueva reserva.', 'error');
-        }
-        return; 
-    }
-    
-    // Si el código llega aquí, el temporizador está ACTIVO.
-    
-    if (!idSeleccionado || idSeleccionado === "") {
-         cupoDiv.textContent = 'Selecciona una función.';
-         precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">...</span>';
-         // Deshabilitamos si no hay selección
-         if (btnReservar) btnReservar.disabled = true; 
-         return;
-    }
-
-
-    // 1. Actualizar Cupo (lo hacemos con los datos que ya tenemos en 'todosLosCupos')
-    if (todosLosCupos.hasOwnProperty(idSeleccionado)) {
-        const cupoRestante = todosLosCupos[idSeleccionado];
-
-        if (cupoRestante === 0) {
-            cupoDiv.textContent = '🎟️ AGOTADO';
-            cupoDiv.classList.add('agotado-rojo');
-            // Deshabilitar el botón al estar agotado
-            if (btnReservar) btnReservar.disabled = true; 
-        } else {
-            // Habilitar el botón si hay cupo Y el tiempo NO se agotó (ya verificado arriba)
-            cupoDiv.textContent = `🎟️ ${cupoRestante} disp.`;
-            cupoDiv.classList.remove('agotado-rojo');
-            if (btnReservar) btnReservar.disabled = false; 
-        }
-
-        // ... El resto del código de Opciones del select y Precio es el mismo ...
-        
-        // Opciones del select: (Actualización de agotado)
-        const opciones = selectFecha.options;
-        for (let opt of opciones) {
-            if(todosLosCupos.hasOwnProperty(opt.value)) {
-                 const cupo = todosLosCupos[opt.value];
-                 let textoLimpio = opt.textContent.replace(' (Agotado)', '').trim();
-
-                 if (cupo === 0) {
-                    opt.textContent = textoLimpio + " (Agotado)";
-                    opt.style.color = "#b5b5b5"; 
-                 } else {
-                    opt.textContent = textoLimpio; 
-                    opt.style.color = "black";
-                 }
+        /* MOSTRAR CUPO Y PRECIO SELECCIONADO (CLAVE LIMPIA Y CORREGIDA) */
+        async function mostrarCupoSeleccionado() { 
+            const selectFecha = document.getElementById('fecha');
+            const idSeleccionado = selectFecha.value;
+            const cupoDiv = document.getElementById('cupoDiv');
+            const precioDiv = document.getElementById('precioUnitario'); 
+            const btnReservar = document.getElementById('btnReservar'); 
+            const timerDiv = document.getElementById('timerDiv'); 
+            
+            
+            // 🛑 1. VERIFICAR SI EL TIEMPO ESTÁ AGOTADO (Prioridad 1)
+            if (timerDiv.textContent.includes('00:00')) {
+                if (btnReservar) btnReservar.disabled = true;
+                return; 
             }
-        }
-        
-        // 2. Actualizar Precio Específico del Evento (Llamada al servidor)
-        try {
-            precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">...</span>';
-            const url = EXEC_URL + '?accion=obtenerPrecio&idEvento=' + encodeURIComponent(idSeleccionado);
-            const response = await fetch(url);
-            const data = await response.json();
+            
+            // 2. ESTADO INICIAL (Cuando no hay nada seleccionado)
+            if (!idSeleccionado || idSeleccionado === "") {
+                cupoDiv.textContent = 'Selecciona una función.';
+                precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">...</span>';
+                if (btnReservar) btnReservar.disabled = true; 
+                return;
+            }
 
-            if (data.status === 'OK' && data.precio) {
-                precioDiv.innerHTML = `
-                    <span style="font-size:0.9em; display:block;">VALOR</span>
-                    <span class="precio-monto">$${data.precio}</span>
-                `;
+
+            // 3. ACTUALIZAR CUPO, ESTADO Y BOTÓN
+            if (todosLosCupos.hasOwnProperty(idSeleccionado)) {
+                const cupoRestante = todosLosCupos[idSeleccionado];
+
+                if (cupoRestante === 0) {
+                    cupoDiv.textContent = '🎟️ AGOTADO';
+                    cupoDiv.classList.add('agotado-rojo');
+                    if (btnReservar) btnReservar.disabled = true; 
+                } else {
+                    cupoDiv.textContent = `🎟️ ${cupoRestante} disp.`;
+                    cupoDiv.classList.remove('agotado-rojo');
+                    if (btnReservar) btnReservar.disabled = false; 
+                }
+
+                // 3.1. Actualización de opciones del select (gris para agotados)
+                const opciones = selectFecha.options;
+                for (let opt of opciones) {
+                    if(todosLosCupos.hasOwnProperty(opt.value)) {
+                        const cupo = todosLosCupos[opt.value];
+                        // Limpiamos el texto antes de reescribirlo para evitar duplicados
+                        let textoLimpio = opt.textContent.replace(' (Agotado)', '').trim();
+
+                        if (cupo === 0) {
+                            opt.textContent = textoLimpio + " (Agotado)";
+                            opt.style.color = "#b5b5b5"; 
+                        } else {
+                            opt.textContent = textoLimpio; 
+                            opt.style.color = "black";
+                        }
+                    }
+                }
+                
+                // 4. ACTUALIZAR PRECIO (Llamada al servidor)
+                try {
+                    precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">...</span>';
+                    const url = EXEC_URL + '?accion=obtenerPrecio&idEvento=' + encodeURIComponent(idSeleccionado);
+                    const response = await fetch(url);
+                    const data = await response.json();
+
+                    if (data.status === 'OK' && data.precio) {
+                        precioDiv.innerHTML = `
+                            <span style="font-size:0.9em; display:block;">VALOR</span>
+                            <span class="precio-monto">$${data.precio}</span>
+                        `;
+                    } else {
+                        precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">N/A</span>';
+                    }
+                } catch (error) {
+                    console.error('Error al actualizar precio:', error);
+                    precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">Error</span>';
+                }
+                
             } else {
-                precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">N/A</span>';
+                // Estado si se selecciona una opción que no tiene datos de cupo
+                cupoDiv.textContent = 'Selecciona una función.';
+                precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">...</span>';
+                if (btnReservar) btnReservar.disabled = true; 
             }
-        } catch (error) {
-            console.error('Error al actualizar precio:', error);
-            precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">Error</span>';
         }
+
+
+        // *** LÓGICA DE ENVÍO Y MANEJO DE EVENTOS ***
         
-    } else {
-        cupoDiv.textContent = 'Selecciona una función.';
-        precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">...</span>';
-        if (btnReservar) btnReservar.disabled = true; 
-    }
-}
-
-
-        /* BOTON RESERVA - CÓDIGO CORREGIDO */
-        document.getElementById('btnReservar').onclick = async function() {
+        // El listener ahora apunta al formulario para usar el 'submit'
+        document.getElementById('formReserva').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Detenemos el envío HTML por defecto
+            
             mostrarMensaje(''); 
 
-            const btn = this; // Guardamos la referencia al botón
+            const btn = document.getElementById('btnReservar');
 
             const nombre = document.getElementById('nombre').value.trim();
+            // Limpiamos el teléfono aquí.
             const telefonoCliente = document.getElementById('telefono').value.trim().replace(/\D/g,''); 
             const cantidad = parseInt(document.getElementById('cantidad').value);
             const fecha = document.getElementById('fecha').value; 
 
+            // ** VALIDACIONES FINALES **
             if (!nombre || !telefonoCliente || !cantidad || !fecha) {
                 mostrarMensaje('💡 Completa todos los campos.', 'error');
                 return;
             }
 
-            // Comprobación de que el botón no esté ya deshabilitado (por el temporizador o cupo agotado)
             if (btn.disabled) {
-                 mostrarMensaje('⏰ Tiempo de reserva agotado o evento sin cupo. Actualiza la página para comenzar de nuevo.', 'error');
-                 return; 
+                mostrarMensaje('⏰ Tiempo de reserva agotado o evento sin cupo. Actualiza la página para comenzar de nuevo.', 'error');
+                return; 
             }
-
 
             // VALIDACIÓN HONEYPOT (ANTI-SPAM)
             const apellidoBot = document.getElementById('apellidoBot').value.trim();
@@ -477,9 +450,10 @@ async function mostrarCupoSeleccionado() {
             // Verifica que haya cupo (doble chequeo)
             const cupoActual = todosLosCupos[fecha] || 0;
             if (cantidad > cupoActual) {
-                 mostrarMensaje(`Solo quedan ${cupoActual} entradas. Ajusta la cantidad.`, 'error');
-                 return;
+                mostrarMensaje(`Solo quedan ${cupoActual} entradas. Ajusta la cantidad.`, 'error');
+                return;
             }
+            // ** FIN VALIDACIONES **
 
             const formData = new URLSearchParams();
             formData.append('accion', 'reservar');
@@ -520,7 +494,7 @@ async function mostrarCupoSeleccionado() {
                     // Actualiza cupo después de reservar
                     actualizarCupo().then(() => mostrarCupoSeleccionado());
                     
-                    // Si es exitoso, dejamos el botón deshabilitado y quitamos la clase loading
+                    // Si es exitoso, dejamos el botón deshabilitado
                     btn.disabled = true; 
                     btn.classList.remove('loading');
                     
@@ -539,13 +513,13 @@ async function mostrarCupoSeleccionado() {
                 btn.classList.remove('loading');
                 startTimer(); 
             }
-        };
+        });
 
 
         document.getElementById('fecha').addEventListener('change', mostrarCupoSeleccionado);
 
 
-        // *** 4. INICIAR LAS FUNCIONES AL CARGAR ***
+        // *** 4. INICIAR LAS FUNCIONES AL CARGAR (Solo una vez) ***
         cargarNombreObra(); 
         startTimer(); 
         // Primero cargamos las opciones de fecha/evento
@@ -559,5 +533,3 @@ async function mostrarCupoSeleccionado() {
     </script>
 </body>
 </html>
-
-
