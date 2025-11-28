@@ -213,34 +213,45 @@
         }
 
         
-       /* TEMPORIZADOR (Columna 3) */
-        function startTimer() {
-            let duration = 5 * 60; // 5 minutos
-            const timerDiv = document.getElementById('timerDiv');
+      /* TEMPORIZADOR (Columna 3) - CORRECCIÓN DE BOTÓN */
+function startTimer() {
+    let duration = 0.25 * 60; // 15 segundos (Cámbialo a 15 para pruebas)
+    const timerDiv = document.getElementById('timerDiv');
+    // CLAVE 1: Obtener la referencia al botón
+    const btn = document.getElementById('btnReservar'); 
+    
+    // CLAVE 2: Asegurar que el botón esté activo al iniciar la página/contador
+    if (btn) {
+        btn.disabled = false;
+        // También quitamos la clase 'loading' si quedó de la reserva anterior
+        btn.classList.remove('loading');
+    }
 
-            function updateTimer() {
-                const minutes = parseInt(duration / 60, 10);
-                const seconds = parseInt(duration % 60, 10);
+    function updateTimer() {
+        const minutes = parseInt(duration / 60, 10);
+        const seconds = parseInt(duration % 60, 10);
 
-                const displayMinutes = minutes < 10 ? "0" + minutes : minutes;
-                const displaySeconds = seconds < 10 ? "0" + seconds : seconds;
+        const displayMinutes = minutes < 10 ? "0" + minutes : minutes;
+        const displaySeconds = seconds < 10 ? "0" + seconds : seconds;
 
-                timerDiv.textContent = "⏱️ " + displayMinutes + ":" + displaySeconds; 
+        timerDiv.textContent = "⏱️ " + displayMinutes + ":" + displaySeconds; 
 
-                if (--duration < 0) {
-                    clearInterval(timerTimeout); 
-                    document.getElementById('btnReservar').disabled = true;
-                    timerDiv.textContent = "⏱️ 00:00";
-                    
-                    // 💡 ACCIÓN A AÑADIR: Muestra un mensaje de expiración
-                    mostrarMensaje('⏰ Tiempo agotado. Debes actualizar la página para iniciar una nueva reserva.', 'error'); 
-                }
+        if (--duration < 0) {
+            clearInterval(timerTimeout); 
+            
+            // CLAVE 3: Usar la variable 'btn' para deshabilitar si existe
+            if (btn) {
+                btn.disabled = true; 
             }
             
-            if (timerTimeout) clearInterval(timerTimeout); 
-            timerTimeout = setInterval(updateTimer, 1000);
+            timerDiv.textContent = "⏱️ 00:00";
+            mostrarMensaje('⏰ Tiempo agotado. Debes actualizar la página para iniciar una nueva reserva.', 'error'); 
         }
-
+    }
+    
+    if (timerTimeout) clearInterval(timerTimeout); 
+    timerTimeout = setInterval(updateTimer, 1000);
+}
         /* CARGAR OPCIONES DEL EVENTO */
         async function cargarOpcionesEventos(opciones) {
             const select = document.getElementById('fecha');
@@ -459,5 +470,6 @@
     </script>
 </body>
 </html>
+
 
 
