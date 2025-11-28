@@ -171,7 +171,21 @@ async function cargarNombreObra() {
             document.title = nuevoNombre;
             tituloObra.textContent = nuevoNombre;
 
-            if (data.precio) {
+          
+if (data.precio) {
+                // ✅ CLAVE: Usamos VALOR, que es más corto
+                precioDiv.innerHTML = `
+                    <span style="font-size:0.9em; display:block;">Valor</span>
+                    <span class="precio-monto">$${data.precio}</span>
+                `;
+            } else if (precioDiv) {
+                // ... (El resto del código de la función)
+
+
+
+
+
+                
                 // ✅ CLAVE: Hacemos el texto "PRECIO POR UNIDAD" más pequeño con un estilo en línea
                 precioDiv.innerHTML = `
                     <span style="font-size:0.9em; display:block;">PRECIO POR UNIDAD</span>
@@ -412,6 +426,7 @@ fetch(EXEC_URL + '?accion=obtenerOpciones&obra=' + encodeURIComponent(OBRA_FILTR
 </script>
 </body>
 </html>
+
 
 
 
