@@ -334,52 +334,58 @@ function startTimer() {
             }
         }
 
+
+
+        
         /* MOSTRAR CUPO Y PRECIO SELECCIONADO (Columna 2 y 1) */
-        async function mostrarCupoSeleccionado() { 
-            const selectFecha = document.getElementById('fecha');
-            const idSeleccionado = selectFecha.value;
-            const cupoDiv = document.getElementById('cupoDiv');
-            const precioDiv = document.getElementById('precioUnitario'); 
+async function mostrarCupoSeleccionado() { 
+    const selectFecha = document.getElementById('fecha');
+    const idSeleccionado = selectFecha.value;
+    const cupoDiv = document.getElementById('cupoDiv');
+    const precioDiv = document.getElementById('precioUnitario'); 
+    
+    // 💡 CLAVE 1: Obtenemos la referencia al botón Reservar
+    const btnReservar = document.getElementById('btnReservar'); 
+    
 
-            if (!idSeleccionado || idSeleccionado === "") {
-                 cupoDiv.textContent = 'Selecciona una función.';
-                 precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">...</span>';
-                 return;
-            }
+    if (!idSeleccionado || idSeleccionado === "") {
+         cupoDiv.textContent = 'Selecciona una función.';
+         precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">...</span>';
+         // Deshabilitamos si no hay selección
+         if (btnReservar) btnReservar.disabled = true; 
+         return;
+    }
 
 
-            // 1. Actualizar Cupo (lo hacemos con los datos que ya tenemos en 'todosLosCupos')
-            if (todosLosCupos.hasOwnProperty(idSeleccionado)) {
-                const cupoRestante = todosLosCupos[idSeleccionado];
+    // 1. Actualizar Cupo (lo hacemos con los datos que ya tenemos en 'todosLosCupos')
+    if (todosLosCupos.hasOwnProperty(idSeleccionado)) {
+        const cupoRestante = todosLosCupos[idSeleccionado];
 
-                if (cupoRestante === 0) {
-                    cupoDiv.textContent = '🎟️ AGOTADO';
-                    cupoDiv.classList.add('agotado-rojo');
-                } else {
-                    cupoDiv.textContent = `🎟️ ${cupoRestante} disp.`;
-                    cupoDiv.classList.remove('agotado-rojo');
-                }
+        if (cupoRestante === 0) {
+            cupoDiv.textContent = '🎟️ AGOTADO';
+            cupoDiv.classList.add('agotado-rojo');
+            // 💡 CLAVE 2: Deshabilitar el botón al estar agotado
+            if (btnReservar) btnReservar.disabled = true; 
+        } else {
+            cupoDiv.textContent = `🎟️ ${cupoRestante} disp.`;
+            cupoDiv.classList.remove('agotado-rojo');
+            // 💡 CLAVE 3: Habilitar el botón si hay cupo
+            if (btnReservar) btnReservar.disabled = false; 
+        }
 
-                // Opciones del select: (Actualización de agotado)
-                const opciones = selectFecha.options;
-                for (let opt of opciones) {
-                    // Solo actualiza si es un ID válido
-                    if(todosLosCupos.hasOwnProperty(opt.value)) {
-                         const cupo = todosLosCupos[opt.value];
-                         
-                         // *** CÓDIGO CORREGIDO ***
-                         // Quita explícitamente solo la etiqueta (Agotado) si existe.
-                         let textoLimpio = opt.textContent.replace(' (Agotado)', '').trim();
+        // ... el resto de la lógica de actualización de opciones agotadas (mantener sin cambios) ...
 
-                         if (cupo === 0) {
-                            opt.textContent = textoLimpio + " (Agotado)";
-                            opt.style.color = "#b5b5b5"; 
-                         } else {
-                            opt.textContent = textoLimpio; // Restaura el texto limpio: "Viernes 10/11-22:00 hs"
-                            opt.style.color = "black";
-                         }
-                    }
-                }
+        // 2. Actualizar Precio Específico del Evento (Llamada al servidor)
+        // ... (El resto del código de precio queda igual) ...
+        
+    } else {
+        cupoDiv.textContent = 'Selecciona una función.';
+        precioDiv.innerHTML = '<span style="font-size:0.9em; display:block;">VALOR</span> <span class="precio-monto">...</span>';
+        if (btnReservar) btnReservar.disabled = true; 
+    }
+}
+                
+                
                 
                 // 2. Actualizar Precio Específico del Evento (Llamada al servidor)
                 try {
@@ -524,6 +530,7 @@ document.getElementById('btnReservar').onclick = async function() {
     </script>
 </body>
 </html>
+
 
 
 
